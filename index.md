@@ -36,40 +36,37 @@ Deliverables:
 We will choose C++ as the programming language. This is because it provides more low-level flexibility such as memory management and pointer operations than other object-oriented languages. Also, it has the pthreads library which can be easily used to write parallel benchmarking programs.
 
 Because this project is not computationally expensive and does not rely on any specific hardware, we will mostly be using our own machines as the platform for development. For benchmarking, we might use the Xeon Phi Latedays server because it contains more cores than our own laptops, allowing us to benchmark our project’s performance for a large number of threads.
+
+### Schedule
+
+#### Week 1 (10/30 - 11/5)
+- Preliminary Research
+- Project Website
+
+#### Week 2 (11/6 - 11/12)
+= Implement non-concurrent AVL tree
+- Implement non-concurrent Red-black Tree
+
+#### Week 3 (11/13 - 11/19)
+- Implement lock-free AVL tree
+
+#### Week 4 (11/20 - 11/26)
+- Implement lock-free Red-black Tree
+- Implement lock version of AVL and Red-black tree
+
+#### Week 5 (11/27 - 12/3)
+- Implement benchmark programs
+- Run benchmarks
+- Fix bugs and further optimize based on benchmark results
+
+#### Week 6 (12/4 - 12/10)
+- Write project report
+
+#### Extra Time
+- Implement concurrent map/set STL containers using lock-free BSTs
+
   
 ### Resources
 
-https://ppl.stanford.edu/papers/ppopp207-bronson.pdf
-https://www.cs.umanitoba.ca/~hacamero/Research/RBTreesKim.pdf
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/sarandia/lockfreebst/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+<a href="https://ppl.stanford.edu/papers/ppopp207-bronson.pdf"></a>
+<a href="https://www.cs.umanitoba.ca/~hacamero/Research/RBTreesKim.pdf"></a>
