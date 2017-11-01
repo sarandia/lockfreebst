@@ -1,4 +1,5 @@
-## Welcome to GitHub Pages
+## Lock-free Concurrent Self-balancing Binary Search Tree
+# Team Members: Ziyuan Chen (ziyuanc), Ruogu Du (ruogud)
 
 You can use the [editor on GitHub](https://github.com/sarandia/lockfreebst/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
 
