@@ -1,4 +1,4 @@
-# Lock-free Concurrent Self-balancing Binary Search Tree
+# Lock-free Self-balancing Binary Search Tree
 ## Team Members: Ziyuan Chen (ziyuanc), Ruogu Du (ruogud)
 
 ### Summary
