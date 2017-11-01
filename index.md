@@ -68,5 +68,5 @@ Because this project is not computationally expensive and does not rely on any s
   
 ### Resources
 
-<a href="https://ppl.stanford.edu/papers/ppopp207-bronson.pdf"></a>
-<a href="https://www.cs.umanitoba.ca/~hacamero/Research/RBTreesKim.pdf"></a>
+https://ppl.stanford.edu/papers/ppopp207-bronson.pdf
+https://www.cs.umanitoba.ca/~hacamero/Research/RBTreesKim.pdf
