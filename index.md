@@ -49,7 +49,7 @@ Because this project is not computationally expensive nor relies on any specific
 - Project Website
 
 #### Week 2 (11/6 - 11/12)
-= Implement non-concurrent AVL tree
+- Implement non-concurrent AVL tree
 - Implement non-concurrent Red-black Tree
 
 #### Week 3 (11/13 - 11/19)
