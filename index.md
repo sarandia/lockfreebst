@@ -13,29 +13,34 @@ If a tree structure is shared among multiple threads, typically in a shared memo
 
 There are three major variants of self-balancing BSTs that we will consider using. They are AVL trees, red-black trees, and splay trees. They all have their advantages and disadvantages. Because the AVL and the splay tree are relatively easy to implement, we will start from one of them. However, red-black trees are used more frequently in production-level libraries, so we will strive to implement a lock-free version of it as well.
 
-Depending on our schedule, we might work on implementing container classes in a lock-free C++ STL using our lock-free self-balancing BSTs. For example, the unordered_map<> and unoredered_set<> classes can benefit from our lock-free trees. Our project, if successful and combined with prior works on lock-free data structures, will result in a lock-free production-level C++ STL.
+Depending on our schedule, we might work on implementing container classes to achieve a lock-free version of C++ Standard Template Library(STL) using our lock-free self-balancing BSTs. For example, the map<> and set<> classes can benefit from our lock-free trees. Our project, if successful and combined with prior works on lock-free data structures, will result in a lock-free production-level C++ STL.
 
 ### Challenges
 
-This project is challenging in several ways. First of all, it is very difficult to come up with a lock-free algorithm, especially for insertions and rotations. We will look for existing research papers that could provide us with some insight. Secondly, due to the complexity of the data structure, we might need to relax the constraint on order. This should be okay as long as we avoid a thread trying to read a node that has already been deleted. Lastly, we need to make sure that our lock-free implementation is sufficiently optimized to outperform the implementation using locks for it to be a meaningful project.
+First of all, it is very difficult to come up with a lock-free algorithm, especially for insertions and rotations, where we need to keep correctness while avoiding race conditions. We will look for existing research papers that could provide us with some insight.
+
+Secondly, due to the complexity of the data structure, we might need to relax the constraint on order. This should be acceptable as long as we avoid a thread trying to read a node that has already been deleted.
+
+Lastly, we need to make sure that our lock-free implementation is sufficiently optimized to outperform the implementation using locks for it to be a meaningful project.
 
 ### Goals and Deliverables
 
-Our primary goal is to implement a lock-free self-balancing BST that outperforms implementations with locks. We believe that we can achieve this goal because we have six weeks of time, and have already found some valuable research papers in this topic. Our extra goal is to use this BST to implement lock-free STL containers that use self-balancing BSTs, such as the unordered_map. If our work goes slower than expected, we would implement a lock-free binary search tree without the capability to self-balance.
+Our primary goal is to implement a lock-free self-balancing BST that outperforms implementations with simple locking schemes. We believe that we can achieve this goal because we learned from the lecture that lock-free implementations should outperform simply locking if done correctly, and have already found some valuable research papers in this topic. Our extra goal is to use this BST to implement lock-free STL containers that use self-balancing BSTs, such as the map. If our work goes slower than expected, we would implement a lock-free binary search tree with relaxed capability to self-balance.
 
-We will demonstrate our project using demo programs that we will write. We will run and time some parallel programs that use our lock-free BST, and show its performance compared to the same program using a BST with locks. We will run these benchmarks in front of the audience, while also putting diagrams and results on the poster.
+We will demonstrate our project using demo programs that we will write. We will run and time some parallel programs that use our lock-free BST, and show its performance compared to the same programs using a BST with locks. If we were to manage to finish lock-free STL, we would demonstrate the performance of our version versus the version with locking. We will run these benchmarks in front of the audience, while also putting diagrams and results on the poster.
 
 Deliverables:
 
-- A lock-free self-balancing BST
+- A simple lock-free self-balancing BST: AVL or splay tree.
+- A more complex lock-free BST: red-black tree.
+- If we go ahead of the schedule, a lock-free concurrent STL data structure using our BST.
 
-- If we go ahead of the schedule, a lock-free concurrent STL data structure using our BST. 
 
 ### Platform Choice
 
 We will choose C++ as the programming language. This is because it provides more low-level flexibility such as memory management and pointer operations than other object-oriented languages. Also, it has the pthreads library which can be easily used to write parallel benchmarking programs.
 
-Because this project is not computationally expensive and does not rely on any specific hardware, we will mostly be using our own machines as the platform for development. For benchmarking, we might use the Xeon Phi Latedays server because it contains more cores than our own laptops, allowing us to benchmark our project’s performance for a large number of threads.
+Because this project is not computationally expensive nor relies on any specific hardware, we will mostly be using our own machines as the platform for development. For benchmarking, we might use the Xeon Phi Latedays server because it contains more cores than our own laptops, allowing us to benchmark our project’s performance for a large number of threads.
 
 ### Schedule
 
