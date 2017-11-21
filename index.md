@@ -70,32 +70,32 @@ In our extra plan, we intended to integrate our lock-free red-black tree into C+
 #### Nov 24
 
 Implement sequential top-down insertion and deletion for red-black tree
-Ruogu Du, Ziyuan Chen
+(Ruogu Du, Ziyuan Chen)
 
 #### Nov 29
 
 Draft lock-free red-black tree
-Ruogu Du, Ziyuan Chen
+(Ruogu Du, Ziyuan Chen)
 
 #### Dec 3
 
 Finish lock-free red-black tree
-Ruogu Du, Ziyuan Chen
+(Ruogu Du, Ziyuan Chen)
 
 #### Dec 6
 
 Research on benchmarks on red-black tree
-Ruogu Du
+(Ruogu Du)
 Research on red-black tree with locks
-Ziyuan Chen
+(Ziyuan Chen)
 
 #### Dec 10
 Finish performance measurement
-Ruogu Du, Ziyuan Chen
+(Ruogu Du, Ziyuan Chen)
 
 #### Dec 12
 Finish poster and report
-Ruogu Du, Ziyuan Chen
+(Ruogu Du, Ziyuan Chen)
 
 ### Resources
 
