@@ -1,4 +1,7 @@
 /* based on Tarjan's Top-down RB Tree Algorithm */
+#include <queue>
+
+namespace lock_free_rbtree {
 
 enum color_t {red, black};
 template <typename KeyType, typename ValueType>
@@ -83,7 +86,11 @@ void RBTree::Insert(KeyType key, ValueType value) {
 
 template <typename KeyType, typename ValueType>
 void RBTree::Remove(KeyType key) {
-  // TODO
+  std::queue<TreeNode *> q;
+
+  q.push_back(q);
+
+
 }
 
 template <typename KeyType, typename ValueType>
@@ -120,4 +127,6 @@ void RBTree::rotateRightChildRight(TreeNode *parent) {
   parent->right->left->right = parent->right;
   parent->right->left = temp;
   parent->right = newRight;
+}
+
 }
