@@ -99,9 +99,11 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   // 2. walking down from the current node
   treenode_t *y = x;
   treenode_t *prev;
+  vector<treenode_t *> q;
   int successiveBlk = 0;
   while (!y->IsExternal()) {
     // check if node is black with 2 red chilren
+    q.push_back(y);
     if (y->color == black) {
       if (y->left == red && y->right == red) {
         successiveBlk ++;
@@ -122,7 +124,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       z->left->color = black;
       z->right->color = black;
       // fix color problems
-      fix_insert(x, z);
+      fix_insert(q);
       // replace the current node x by the child of z along the access path
       if (key < z->key) {
         x = z->left;
@@ -133,6 +135,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
         y = x;
       }
       successiveBlk = 0;
+      q.clear();
       // repeat the general step
       continue;
     }
@@ -147,23 +150,95 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     if (prev->color == black && y->color == black) {
       // repeat current node x by y
       x = y;
+      q.clear();
     }
 
   } // while
   // node y is external; must perform bottom-up insertion
   if (y->key == key) return;
   treenode_t *new_int = new treenode_t();
-  exttreenode_t *left_child = new exttreenode_t();
-  exttreenode_t *right_child = new exttreenode_t();
-  if (y->key < key) {
-
+  exttreenode_t *new_item = new exttreenode_t();
+  new_item->key = key;
+  new_item->value = value;
+  if (y->key <= key) {
+    new_int->key = y->key;
+    new_int->left = y;
+    new_int->right = new_item;
   }
+  else {
+    new_int->key = key;
+    new_int->left = new_item;
+    new_int->right = y;
+  }
+  new_int->color = red;
+  if (new_int->key <= prev->key) {
+    prev->left = new_int;
+  }
+  else {
+    prev->right = new_int;
+  }
+  q.pop(); // pop off y
+  q.push_back(new_int);
+  fix_insert(q);
  
 }
 
 template <typename KeyType, typename ValueType>
-void RBTree<KeyType, ValueType>::fix_insert(treenode_t *x, treenode_t *y) {
-
+void RBTree<KeyType, ValueType>::fix_insert(vector<treenode_t *> &q) {
+  bool is_violation = true;
+  while (is_violation || q.size() <= 4) {
+    is_violation = false;
+    treenode_t *cur = q.back();
+    if (cur->color == red) {
+      treenode_t *parent = *(q.end() - 1);
+      treenode_t *sibling;
+      if (cur->key <= parent->key) {
+        sibling = parent->right;
+      }
+      else {
+        sibling = parent->left;
+      }
+      if (parent->color == red && sibling->color == red) {
+        is_violation = true;
+        treenode_t *grandparent = *(q.end() - 2);
+        grandparent->color = red;
+        parent->color = black;
+        sibling->color = black;
+        q.pop();
+        q.pop();
+      }
+    }
+  }
+  // if reached the root of the tree
+  if (q.size() <= 3) {
+    // 3(c)
+    if (q.size() == 2) {
+      q[0]->color = black;      
+    }
+    else if (is_violation){
+      // need rotation
+      treenode_t *a = q[0];
+      treenode_t *b = q[1];
+      treenode_t *c = q[2];
+      // 3(d)
+      // on the left
+      if (a->left == b && b->left == c) {
+        rotateLeftChildRight(a);
+      }
+      // on the right
+      else if (a->right == b && b->right == c) {
+        rotateRightChildLeft(a);
+      }
+      // 3(e)
+      // on the left
+      else if (a->left == b && b->right == c) {
+        rotateLeftChildRight(a);
+      }
+      else if (a->right == b && b->left == c) {
+        rotateRightChildLeft(a);
+      }
+    }
+  }
 }
 
 template <typename KeyType, typename ValueType>
