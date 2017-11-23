@@ -14,7 +14,7 @@ class TreeNode {
   
   private:
   KeyType key;
-  
+  color_t color;
   TreeNode *left;
   TreeNode *right;
 };
@@ -81,7 +81,57 @@ TreeNode *RBTree::Search(KeyType key) {
 
 template <typename KeyType, typename ValueType>
 void RBTree::Insert(KeyType key, ValueType value) {
-// TODO
+  // 1. make the top-down invariant true initially
+  TreeNode *x = root_;
+  if (x->color == red) x->color = black;
+  if (x->left != nullptr && x->left->color == red \
+      && x->right != nullptr && x->right->color == red) {
+    x->left->color = black;
+    x->right->color = black;
+  }
+  // 2. walking down from the current node
+  TreeNode *y = x;
+  TreeNode *prev;
+  int successiveBlk = 0;
+  while (!y->IsExternal()) {
+    // check if node is black with 2 red chilren
+    if (y->color == black) {
+      if (y->left == red && y->right == red) {
+        successiveBlk ++;
+      }
+      else {
+        successiveBlk = 0;
+      }
+    }
+    else {
+      if (prev->color == red) {
+        successiveBlk = 0;
+      }
+    }
+    // c. color z red and its two children black, then proceed as bottom-up
+    if (successiveBlk == 4) {
+      TreeNode *z = y;
+      z->color = red;
+      z->left->color = black;
+      z->right->color = black;
+      TreeNode *new_int = new TreeNode();
+      new_int->
+    }
+    prev = y;
+    if (key < y->key) {
+      y = y->left;
+    }
+    else if (key > y->key) { // to be re-visited
+      y = y->right;
+    }
+    // b. a black node with a black child is reached
+    if (prev->color == black && y->color == black) {
+      // repeat current node x by y
+      x = y;
+    }
+
+  }
+
 }
 
 template <typename KeyType, typename ValueType>
