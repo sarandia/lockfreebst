@@ -3,7 +3,7 @@
 
 using namespace lock_free_rbtree;
 
-void print_tree(RBTree* t) {
+void print_tree(RBTree<int, int>* t) {
 
 }
 

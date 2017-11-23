@@ -152,8 +152,8 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::rotateLeftChildLeft(treenode_t *parent) {
-  TreeNode *temp = parent->left->right->left;
-  TreeNode *newLeft = parent->left->right;
+  treenode_t *temp = parent->left->right->left;
+  treenode_t *newLeft = parent->left->right;
   parent->left->right->left =  parent->left;
   parent->left->right = temp;
   parent->left = newLeft;
@@ -161,8 +161,8 @@ void RBTree<KeyType, ValueType>::rotateLeftChildLeft(treenode_t *parent) {
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::rotateLeftChildRight(treenode_t *parent) {
-  TreeNode *newLeft = parent->left->left;
-  TreeNode *temp = parent->left->left->right;
+  treenode_t *newLeft = parent->left->left;
+  treenode_t *temp = parent->left->left->right;
   parent->left->left->right = parent->left;
   parent->left->left = temp;
   parent->left = newLeft;
@@ -170,8 +170,8 @@ void RBTree<KeyType, ValueType>::rotateLeftChildRight(treenode_t *parent) {
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::rotateRightChildLeft(treenode_t *parent) {
-  TreeNode *newRight = parent->right->right;
-  TreeNode *temp = parent->right->right->left;
+  treenode_t *newRight = parent->right->right;
+  treenode_t *temp = parent->right->right->left;
   parent->right->right->left = parent->right;
   parent->right->right = temp;
   parent->right = newRight;
@@ -179,8 +179,8 @@ void RBTree<KeyType, ValueType>::rotateRightChildLeft(treenode_t *parent) {
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::rotateRightChildRight(treenode_t *parent) {
-  TreeNode *newRight = parent->right->left;
-  TreeNode *temp = parent->right->left->right;
+  treenode_t *newRight = parent->right->left;
+  treenode_t *temp = parent->right->left->right;
   parent->right->left->right = parent->right;
   parent->right->left = temp;
   parent->right = newRight;
