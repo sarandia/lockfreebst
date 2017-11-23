@@ -87,7 +87,37 @@ void RBTree::Remove(KeyType key) {
 }
 
 template <typename KeyType, typename ValueType>
-void rotateLeftChildLeft(TreeNode *parent);
-void rotateLeftChildRight(TreeNode *parent);
-void rotateRightChildLeft(TreeNode *parent);
-void rotateRightChildRight(TreeNode *parent);
+void RBTree::rotateLeftChildLeft(TreeNode *parent) {
+  TreeNode *temp = parent->left->right->left;
+  TreeNode *newLeft = parent->left->right;
+  parent->left->right->left =  parent->left;
+  parent->left->right = temp;
+  parent->left = newLeft;
+}
+
+template <typename KeyType, typename ValueType>
+void RBTree::rotateLeftChildRight(TreeNode *parent) {
+  TreeNode *newLeft = parent->left->left;
+  TreeNode *temp = parent->left->left->right;
+  parent->left->left->right = parent->left;
+  parent->left->left = temp;
+  parent->left = newLeft;
+}
+
+template <typename KeyType, typename ValueType>
+void RBTree::rotateRightChildLeft(TreeNode *parent) {
+  TreeNode *newRight = parent->right->right;
+  TreeNode *temp = parent->right->right->left;
+  parent->right->right->left = parent->right;
+  parent->right->right = temp;
+  parent->right = newRight;
+}
+
+template <typename KeyType, typename ValueType>
+void RBTree::rotateRightChildRight(TreeNode *parent) {
+  TreeNode *newRight = parent->right->left;
+  TreeNode *temp = parent->right->left->right;
+  parent->right->left->right = parent->right;
+  parent->right->left = temp;
+  parent->right = newRight;
+}
