@@ -48,6 +48,7 @@ class RBTree {
   private:
   TreeNode *root_;
   
+  void fix_insert(TreeNode *x, TreeNode *y);
   void rotateLeftChildLeft(TreeNode *parent);
   void rotateLeftChildRight(TreeNode *parent);
   void rotateRightChildLeft(TreeNode *parent);
@@ -114,11 +115,23 @@ void RBTree::Insert(KeyType key, ValueType value) {
       z->color = red;
       z->left->color = black;
       z->right->color = black;
-      TreeNode *new_int = new TreeNode();
-      new_int->
+      // fix color problems
+      fix_insert(x, z);
+      // replace the current node x by the child of z along the access path
+      if (key < z->key) {
+        x = z->left;
+        y = x;
+      }
+      else {
+        x = z->right;
+        y = x;
+      }
+      successiveBlk = 0;
+      // repeat the general step
+      continue;
     }
     prev = y;
-    if (key < y->key) {
+    if (key <= y->key) {
       y = y->left;
     }
     else if (key > y->key) { // to be re-visited
@@ -130,7 +143,20 @@ void RBTree::Insert(KeyType key, ValueType value) {
       x = y;
     }
 
+  } // while
+  // node y is external; must perform bottom-up insertion
+  if (y->key == key) return;
+  TreeNode *new_int = new TreeNode();
+  ExternalTreeNode *left_child = new ExternalTreeNode();
+  ExternalTreeNode *right_child = new ExternalTreeNode();
+  if (y->key < key) {
+
   }
+
+}
+
+template <typename KeyType, typename ValueType>
+void fix_insert(TreeNode *x, TreeNode *y) {
 
 }
 
