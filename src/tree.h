@@ -1,5 +1,5 @@
 /* based on Tarjan's Top-down RB Tree Algorithm */
-#include <queue>
+#include <vector>
 
 namespace lock_free_rbtree {
 
@@ -15,6 +15,17 @@ class TreeNode {
   
   public:
   bool IsExternal();
+  bool ReplaceChild(TreeNode<KeyType, ValueType> *oldchld, TreeNode<KeyType, ValueType> *newchld) {
+    if (left == oldchld) {
+      left = newchld;
+      return true;
+    }
+    if (right == oldchld) {
+      right = newchld;
+      return true;
+    }
+    return false;
+  }
   
   private:
   KeyType key;
@@ -55,10 +66,11 @@ class RBTree {
   private:
   treenode_t *root_;
   void fix_insert(treenode_t *x, treenode_t *y);
-  void rotateLeftChildLeft(treenode_t *parent);
-  void rotateLeftChildRight(treenode_t *parent);
-  void rotateRightChildLeft(treenode_t *parent);
-  void rotateRightChildRight(treenode_t *parent);
+  bool has_red_child_or_grandchild(treenode_t *cur);
+  void fix_delete(std::vector<treenode_t *> &v);
+  void swapNodes(treenode_t *node1, treenode_t *node2);
+  void rotateLeft(treenode_t *parent);
+  void rotateRight(treenode_t *parent);
 };
 
 template <typename KeyType, typename ValueType>
@@ -167,48 +179,140 @@ void RBTree<KeyType, ValueType>::fix_insert(treenode_t *x, treenode_t *y) {
 }
 
 template <typename KeyType, typename ValueType>
+bool RBTree<KeyType, ValueType>::has_red_child_or_grandchild(treenode_t *cur) {
+
+}
+
+template <typename KeyType, typename ValueType>
+void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
+  auto r_itr = v.rbegin();
+
+  while (r_itr != v.rend()) {
+    treenode_t *cur = NULL;
+    treenode_t *par = NULL;
+    treenode_t *grandpar = NULL;
+    treenode_t *sibling = NULL;
+
+    cur = *r_itr;
+    r_itr++;
+    
+    if (r_itr != v.rbegin()) {
+      par = *r_itr;
+    } else {
+      if (cur->color = red) {
+        cur->color = black;
+      }
+      return;
+    }
+    r_itr++;
+
+    if (r_itr != v.rbegin()) {
+      grandpar = *r_itr;
+    } 
+    
+    if (par->left == cur) {
+      sibling = par->right;
+    } else {
+      sibling = par->left;
+    }
+
+    if (cur->IsExternal()) {
+      if (grandpar != NULL) {
+        grandpar->ReplaceChild(par, sibling);
+        delete cur;
+        delete par;
+      } else {
+          // ASSERT(root_ == par)
+          root_-> = sibling;
+          if (root_ != Null && root_->color != black) {
+            root_color = black;
+          }
+          delete cur;
+          delete par;
+          return;
+      }
+    } else {
+      if (sibling )
+    }
+  }
+  
+}
+
+template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::Remove(KeyType key) {
-  std::queue<treenode_t *> q;
+  std::vector<treenode_t *> v;
 
-  q.push_back(q);
+  treenode_t *curNode = root_;
+  int black_count = 0;
 
+  while (true) {
+
+    if (curnode->IsExternal()) {
+
+    } else {
+      if (has_red_child_or_grandchild(curnode)) {
+        v.clear();
+        black_count = 0;
+      } else {
+        black_count++;
+      }
+
+      v.push_back(curnode);
+
+      if (black_count == 3) {
+
+      }
+
+    }
+  }
 
 }
 
 template <typename KeyType, typename ValueType>
-void RBTree<KeyType, ValueType>::rotateLeftChildLeft(treenode_t *parent) {
-  treenode_t *temp = parent->left->right->left;
-  treenode_t *newLeft = parent->left->right;
-  parent->left->right->left =  parent->left;
-  parent->left->right = temp;
-  parent->left = newLeft;
+void RBTree<KeyType, ValueType>::swapNodes(treenode_t *node1, treenode_t *node2) {
+  KeyType tmpKey = node1->key;
+  color_t tmpColor = node1->color;
+  treenode_t tmpLeft = node1->left;
+  treenode_t tmpRight = node1->right;
+
+  node1->key = node2->key;
+  node1->color = node2->color;
+  node1->left = node2->left;
+  node1->right = node2->right;
+
+  node2->key = tmpKey;
+  node2->color = tmpColor;
+  node2->left = tmpLeft;
+  node2->right = tmpRight;
 }
 
 template <typename KeyType, typename ValueType>
-void RBTree<KeyType, ValueType>::rotateLeftChildRight(treenode_t *parent) {
-  treenode_t *newLeft = parent->left->left;
-  treenode_t *temp = parent->left->left->right;
-  parent->left->left->right = parent->left;
-  parent->left->left = temp;
-  parent->left = newLeft;
+void RBTree<KeyType, ValueType>::rotateLeft(treenode_t *parent) {
+
+  treenode_t *tempRight = parent->right;
+  parent->right = parent;
+  swapNodes(parent, tempRight);
+
+  parent = tempRight;
+  
+  treenode_t *newPar = parent->right;
+  treenode_t *temp = parent->right->left;
+  parent->right->left = parent;
+  parent->right = temp;
 }
 
 template <typename KeyType, typename ValueType>
-void RBTree<KeyType, ValueType>::rotateRightChildLeft(treenode_t *parent) {
-  treenode_t *newRight = parent->right->right;
-  treenode_t *temp = parent->right->right->left;
-  parent->right->right->left = parent->right;
-  parent->right->right = temp;
-  parent->right = newRight;
-}
+void RBTree<KeyType, ValueType>::rotateRight(treenode_t *parent) {
 
-template <typename KeyType, typename ValueType>
-void RBTree<KeyType, ValueType>::rotateRightChildRight(treenode_t *parent) {
-  treenode_t *newRight = parent->right->left;
-  treenode_t *temp = parent->right->left->right;
-  parent->right->left->right = parent->right;
-  parent->right->left = temp;
-  parent->right = newRight;
+  treenode_t *tempLeft = parent->left;
+  parent->left = parent;
+  swapNodes(parent, tempLeft);
+
+  parent = tempLeft;
+
+  treenode_t *temp = parent->left->right;
+  parent->left->right = parent;
+  parent->left = temp;
 }
 
 }
