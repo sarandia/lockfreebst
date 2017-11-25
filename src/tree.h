@@ -145,7 +145,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     if (key <= y->key) {
       y = y->left;
     }
-    else if (key > y->key) { // to be re-visited
+    else if (key > y->key) { // to be re-visited 
       y = y->right;
     }
     // b. a black node with a black child is reached
