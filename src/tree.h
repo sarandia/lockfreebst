@@ -277,10 +277,10 @@ bool RBTree<KeyType, ValueType>::has_red_child_or_grandchild(treenode_t *cur) {
 
 template <typename KeyType, typename ValueType>
 bool RBTree<KeyType, ValueType>::has_red_child(treenode_t *cur) {
-  if (cur->left != NULL && !cur->left.IsExternal() && cur->left->color == red) {
+  if (cur->left != NULL && !cur->left->IsExternal() && cur->left->color == red) {
     return true;
   }
-  if (cur->right != NULL && !cur->right.IsExternal() && cur->right->color == red) {
+  if (cur->right != NULL && !cur->right->IsExternal() && cur->right->color == red) {
     return true;
   }
   return false;
@@ -341,7 +341,7 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
       sibling = par->left;
     }
 
-    if (par->color == black && sibling->color == black && !sibling->has_red_child()) {
+    if (par->color == black && sibling->color == black && !has_red_child(sibling)) {
       sibling->color = red;
       continue;
     } else {
@@ -361,7 +361,7 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
     }
   }
 
-  if (par->color == red & &sibling->color == black && !sibling->has_red_child()) {
+  if (par->color == red && sibling->color == black && !has_red_child(sibling)) {
     par->color = black;
     sibling->color = red;
     return;
@@ -417,7 +417,7 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
       if (curNode->color != black || has_red_child_or_grandchild(curNode)) {
         if (!v.empty()) {
           treenode_t *tempNode = NULL;
-          tempNode->v.back();
+          tempNode = v.back();
           v.clear();
           v.push_back(tempNode);
         }
