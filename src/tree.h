@@ -1,5 +1,6 @@
 /* based on Tarjan's Top-down RB Tree Algorithm */
 #include <vector>
+#include <iterator>
 
 namespace lock_free_rbtree {
 
@@ -92,8 +93,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
 // 1. make the top-down invariant true initially
   treenode_t *x = root_;
   if (x->color == red) x->color = black;
-  if (x->left != nullptr && x->left->color == red \
-      && x->right != nullptr && x->right->color == red) {
+  if (x->left != NULL && x->left->color == red \
+      && x->right != NULL && x->right->color == red) {
     x->left->color = black;
     x->right->color = black;
   }
@@ -250,7 +251,18 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
 
 template <typename KeyType, typename ValueType>
 bool RBTree<KeyType, ValueType>::has_red_child_or_grandchild(treenode_t *cur) {
+  if (cur->left != NULL) {
+    if (has_red_child(cur->left)) {
+      return true;
+    }
+  }
+  if (cur->right != NULL) {
+    if (has_red_child(cur->right)) {
+      return true;
+    }
+  }
 
+  return false;
 }
 
 template <typename KeyType, typename ValueType>
@@ -387,12 +399,12 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 
   while (true) {
 
-    if (curnode->IsExternal()) {
-      v.push_back(curnode);
+    if (curNode->IsExternal()) {
+      v.push_back(curNode);
       fix_delete(v);
       return;
     } else {
-      if (has_red_child_or_grandchild(curnode)) {
+      if (curNode->color != black || has_red_child_or_grandchild(curNode)) {
         if (!v.empty()) {
           treenode_t *tempNode = NULL;
           tempNode->v.back();
@@ -407,7 +419,7 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 
       if (black_count == 3) {
         treenode_t *par = *(v.rbegin());
-        if (curnode == par->left) {
+        if (curNode == par->left) {
           par->right->color = red;
         } else {
           par->left->color = red;
@@ -420,12 +432,12 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
         black_count = 0;
       }
 
-      v.push_back(curnode);
+      v.push_back(curNode);
       
-      if (key <= curnode->key) {
-        curnode = curnode->left;
+      if (key <= curNode->key) {
+        curNode = curNode->left;
       } else {
-        curnode = curnode->right;
+        curNode = curNode->right;
       }
     }
   }
