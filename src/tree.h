@@ -301,9 +301,10 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
   treenode_t *par = NULL;
   treenode_t *sibling = NULL;
 
+  cur = *r_itr;
+
   if (cur->IsExternal()) {
 
-    cur = *r_itr;
     r_itr++;
 
     if (r_itr != v.rend()) {
