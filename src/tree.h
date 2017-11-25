@@ -18,6 +18,8 @@ class TreeNode {
   public:
   TreeNode(bool ext) {
     isExternal_ = ext;
+    left = NULL;
+    right = NULL;
   }
 
   bool IsExternal();
@@ -58,7 +60,7 @@ class RBTree {
   
   void Remove(KeyType key);
 
-  void buildVector(treenode_t *root, int depth, std::vector<treenode_t *> &ret);
+  void buildVector(treenode_t *root, int depth, std::vector<std::vector<treenode_t *> > &ret);
   void print_tree();
   
   private:
@@ -463,19 +465,19 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::buildVector(treenode_t *root, int depth, \
-  std::vector<treenode_t *> &ret) {
+  std::vector<std::vector<treenode_t *> > &ret) {
     if(root == NULL) return;
     if(ret.size() == depth)
-        ret.push_back(std::vector<int>());
+        ret.push_back(std::vector<treenode_t *>());
     
     ret[depth].push_back(root);
-    buildVector(root->left, depth + 1, ret);
-    buildVector(root->right, depth + 1, ret);
+    if (root->left != NULL) buildVector(root->left, depth + 1, ret);
+    if (root->right != NULL) buildVector(root->right, depth + 1, ret);
 }
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::print_tree() {
-  std::vector<treenode_t *> ret;
+  std::vector<std::vector<treenode_t *> > ret;
   buildVector(root_, 0, ret);
   for (int level = 0; level < ret.size(); level++) {
     for (int node_i = 0; node_i < ret[level].size(); node_i++) {
@@ -487,7 +489,7 @@ void RBTree<KeyType, ValueType>::print_tree() {
       else {
         cl = "red";
       }
-      printf("(%d, %d, %s, %d). ", cur->key, cur->value, cl, cur->isExternal());
+      printf("(%d, %d, %s, %d). ", cur->key, cur->value, cl.c_str(), cur->IsExternal());
     }
     printf("\n");
   }
