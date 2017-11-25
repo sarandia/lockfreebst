@@ -65,7 +65,7 @@ class RBTree {
   
   private:
   treenode_t *root_;
-  void fix_insert(treenode_t *x, treenode_t *y);
+  void fix_insert(std::vector<treenode_t*> &v);
   bool has_red_child_or_grandchild(treenode_t *cur);
   void fix_delete(std::vector<treenode_t *> &v);
   void swapNodes(treenode_t *node1, treenode_t *node2);
@@ -111,7 +111,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   // 2. walking down from the current node
   treenode_t *y = x;
   treenode_t *prev;
-  vector<treenode_t *> q;
+  std::vector<treenode_t *> q;
   int successiveBlk = 0;
   while (!y->IsExternal()) {
     // check if node is black with 2 red chilren
@@ -196,9 +196,9 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
 }
 
 template <typename KeyType, typename ValueType>
-void RBTree<KeyType, ValueType>::fix_insert(vector<treenode_t *> &q) {
+void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
   bool is_violation = true;
-  while (is_violation || q.size() <= 4) {
+  while (is_violation) {
     is_violation = false;
     treenode_t *cur = q.back();
     if (cur->color == red) {
@@ -210,47 +210,53 @@ void RBTree<KeyType, ValueType>::fix_insert(vector<treenode_t *> &q) {
       else {
         sibling = parent->left;
       }
+      if (parent == q[0]) break;
       if (parent->color == red && sibling->color == red) {
         is_violation = true;
         treenode_t *grandparent = *(q.end() - 2);
         grandparent->color = red;
         parent->color = black;
         sibling->color = black;
-        q.pop();
+        // we then go up by 1. The current node is now the parent
         q.pop();
       }
     }
   }
-  // if reached the root of the tree
-  if (q.size() <= 3) {
-    // 3(c)
-    if (q.size() == 2) {
-      q[0]->color = black;      
+
+  // if reached the root of the tree, fix the last color violation
+  if (q.size() <=2) {
+    treenode_t *cur = q[1];
+    treenode_t *window_root = q[0];
+    treenode_t *sibling;
+    int direction = 0;
+    if (window_root->left == q[1]) {
+      sibling = window_root->right;
     }
-    else if (is_violation){
-      // need rotation
-      treenode_t *a = q[0];
-      treenode_t *b = q[1];
-      treenode_t *c = q[2];
-      // 3(d)
-      // on the left
-      if (a->left == b && b->left == c) {
-        rotateLeftChildRight(a);
+    else {
+      sibling = window_root->left;
+      direction = 1;
+    }
+    // 3-c, both window_root and cur are red, and all children of cur are black
+    // also, the sibling needs to be black
+    if (window_root->color == red && sibling->color == black && cur->color == red && \
+      cur->left->color == black && cur->right->color == black) {
+      // we color root to be black
+      window_root->color = black;
+    }
+    // 3-d and e, cur is red and has a red child
+    if (window_root->color == black && cur->color == red && (cur->left->color == red \
+      || cur->right->color == red)) {
+      // re-color the tree, then rotate
+      cur->color = black;
+      if (direction == 0) {
+        rotateRight(window_root);
       }
-      // on the right
-      else if (a->right == b && b->right == c) {
-        rotateRightChildLeft(a);
-      }
-      // 3(e)
-      // on the left
-      else if (a->left == b && b->right == c) {
-        rotateLeftChildRight(a);
-      }
-      else if (a->right == b && b->left == c) {
-        rotateRightChildLeft(a);
+      else {
+        rotateLeft(window_root);
       }
     }
   }
+
 }
 
 template <typename KeyType, typename ValueType>
