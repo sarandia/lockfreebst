@@ -269,28 +269,22 @@ template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
   auto r_itr = v.rbegin();
 
-  while (r_itr != v.rend()) {
-    treenode_t *cur = NULL;
-    treenode_t *par = NULL;
-    treenode_t *sibling = NULL;
+  treenode_t *cur = NULL;
+  treenode_t *par = NULL;
+  treenode_t *sibling = NULL;
+
+  if (cur->IsExternal()) {
 
     cur = *r_itr;
     r_itr++;
-    
-    if (r_itr != v.rbegin()) {
+
+    if (r_itr != v.rend()) {
       par = *r_itr;
     } else {
-      if (!cur->IsExternal()) {
-        if (cur->color = red) {
-          cur->color = black;
-        }
-      } else {
-        delete cur;
-        root_ = NULL;
-      }
+      root_ = NULL;
+      delete cur;
       return;
     }
-    r_itr++;
     
     if (par->left == cur) {
       sibling = par->right;
@@ -298,70 +292,91 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
       sibling = par->left;
     }
 
-    if (cur->IsExternal()) {
-      swapNodes(par, sibling);
+    swapNodes(par, sibling);
 
-      delete cur;
-      delete sibling;
-      continue;
+    delete cur;
+    delete sibling;
+  }
+
+  while (r_itr != v.rend()) {
+
+    cur = *r_itr;
+    r_itr++;
+    
+    if (r_itr != v.rend()) {
+      par = *r_itr;
+    } else {
+      if (!cur->IsExternal()) {
+        if (cur->color = red) {
+          cur->color = black;
+        }
+      }
+      return;
+    }
+    
+    if (par->left == cur) {
+      sibling = par->right;
+    } else {
+      sibling = par->left;
     }
 
     if (par->color == black && sibling->color == black && !sibling->has_red_child()) {
       sibling->color = red;
       continue;
-    }
-
-    if (sibling->color == red) {
-      par->color = red;
-      sibling->color = black;
-      if (sibling == par->right) {
-        rotateLeft(par);
-      } else {
-        rotateRight(par);
-      }
-      return;
-    }
-
-    if (par->color == red & &sibling->color == black && !sibling->has_red_child()) {
-      par->color = black;
-      sibling->color = red;
-      return;
-    }
-
-    if (sibling == par->right) {
-      if (sibling->color == black && sibling->right->color == red) {
-        sibling->color = par->color;
-        sibling->right->color = black;
-        par->color = black;
-        rotateLeft(par);
-        return;
-      }
-      if (sibling->color == black && sibling->left->color == red) {
-        sibling->left->color = par->color;
-        par->color = black;
-        rotateRight(sibling);
-        rotateLeft(par);
-        return;
-      }
     } else {
-      if (sibling->color == black && sibling->left->color == red) {
-        sibling->color = par->color;
-        sibling->left->color = black;
-        par->color = black;
-        rotateRight(par);
-        return;
-      }
-      if (sibling->color == black && sibling->right->color == red) {
-        sibling->right->color = par->color;
-        par->color = black;
-        rotateLeft(sibling);
-        rotateRight(par);
-        return;
-      }
+      break;
     }
-    
   }
-  
+
+  if (sibling->color == red) {
+    par->color = red;
+    sibling->color = black;
+    if (sibling == par->right) {
+      rotateLeft(par);
+      cur = par->left->left;
+    } else {
+      rotateRight(par);
+      cur = par->right->right;
+    }
+  }
+
+  if (par->color == red & &sibling->color == black && !sibling->has_red_child()) {
+    par->color = black;
+    sibling->color = red;
+    return;
+  }
+
+  if (sibling == par->right) {
+    if (sibling->color == black && sibling->right->color == red) {
+      sibling->color = par->color;
+      sibling->right->color = black;
+      par->color = black;
+      rotateLeft(par);
+      return;
+    }
+    if (sibling->color == black && sibling->left->color == red) {
+      sibling->left->color = par->color;
+      par->color = black;
+      rotateRight(sibling);
+      rotateLeft(par);
+      return;
+    }
+  } else {
+    if (sibling->color == black && sibling->left->color == red) {
+      sibling->color = par->color;
+      sibling->left->color = black;
+      par->color = black;
+      rotateRight(par);
+      return;
+    }
+    if (sibling->color == black && sibling->right->color == red) {
+      sibling->right->color = par->color;
+      par->color = black;
+      rotateLeft(sibling);
+      rotateRight(par);
+      return;
+    }
+  }
 }
 
 template <typename KeyType, typename ValueType>
