@@ -49,7 +49,6 @@ class RBTree {
   ~RBTree();
   
   typedef TreeNode<KeyType, ValueType> treenode_t;
-  typedef ExternalTreeNode<KeyType, ValueType> exttreenode_t;
 
   treenode_t * Search(KeyType key);
   
@@ -158,8 +157,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   } // while
   // node y is external; must perform bottom-up insertion
   if (y->key == key) return;
-  treenode_t *new_int = new treenode_t();
-  exttreenode_t *new_item = new exttreenode_t();
+  treenode_t *new_int = new treenode_t(false);
+  treenode_t *new_item = new treenode_t(true);
   new_item->key = key;
   new_item->value = value;
   if (y->key <= key) {
