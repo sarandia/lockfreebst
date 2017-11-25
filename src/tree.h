@@ -252,11 +252,17 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
 template <typename KeyType, typename ValueType>
 bool RBTree<KeyType, ValueType>::has_red_child_or_grandchild(treenode_t *cur) {
   if (cur->left != NULL) {
+    if (cur->left->color == red) {
+      return true;
+    }
     if (has_red_child(cur->left)) {
       return true;
     }
   }
   if (cur->right != NULL) {
+    if (cur->right->color == red) {
+      return true;
+    }
     if (has_red_child(cur->right)) {
       return true;
     }
