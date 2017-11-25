@@ -14,7 +14,12 @@ class TreeNode {
   friend class RBTree<KeyType, ValueType>;
   
   public:
+  TreeNode(bool ext) {
+    isExternal_ = ext;
+  }
+
   bool IsExternal();
+  ValueType GetValue();
   bool ReplaceChild(TreeNode<KeyType, ValueType> *oldchld, TreeNode<KeyType, ValueType> *newchld) {
     if (left == oldchld) {
       left = newchld;
@@ -32,18 +37,7 @@ class TreeNode {
   color_t color;
   TreeNode *left;
   TreeNode *right;
-};
-
-template <typename KeyType, typename ValueType>
-class ExternalTreeNode : public TreeNode<KeyType, ValueType> {
-  
-  friend class RBTree<KeyType, ValueType>;
-  
-  public:
-  bool IsExternal();
-  ValueType GetValue();
-  
-  private:
+  bool isExternal_;
   ValueType value;
 };
 
@@ -67,6 +61,7 @@ class RBTree {
   treenode_t *root_;
   void fix_insert(std::vector<treenode_t*> &v);
   bool has_red_child_or_grandchild(treenode_t *cur);
+  bool has_red_child(treenode_t *cur);
   void fix_delete(std::vector<treenode_t *> &v);
   void swapNodes(treenode_t *node1, treenode_t *node2);
   void rotateLeft(treenode_t *parent);
@@ -75,12 +70,7 @@ class RBTree {
 
 template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::IsExternal() {
-  return false;
-}
-
-template <typename KeyType, typename ValueType>
-bool ExternalTreeNode<KeyType, ValueType>::IsExternal() {
-  return true;
+  return isExternal_;
 }
 
 template <typename KeyType, typename ValueType>
@@ -265,13 +255,23 @@ bool RBTree<KeyType, ValueType>::has_red_child_or_grandchild(treenode_t *cur) {
 }
 
 template <typename KeyType, typename ValueType>
+bool RBTree<KeyType, ValueType>::has_red_child(treenode_t *cur) {
+  if (cur->left != NULL && !cur->left.IsExternal() && cur->left->color == red) {
+    return true;
+  }
+  if (cur->right != NULL && !cur->right.IsExternal() && cur->right->color == red) {
+    return true;
+  }
+  return false;
+}
+
+template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
   auto r_itr = v.rbegin();
 
   while (r_itr != v.rend()) {
     treenode_t *cur = NULL;
     treenode_t *par = NULL;
-    treenode_t *grandpar = NULL;
     treenode_t *sibling = NULL;
 
     cur = *r_itr;
@@ -280,16 +280,17 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
     if (r_itr != v.rbegin()) {
       par = *r_itr;
     } else {
-      if (cur->color = red) {
-        cur->color = black;
+      if (!cur->IsExternal()) {
+        if (cur->color = red) {
+          cur->color = black;
+        }
+      } else {
+        delete cur;
+        root_ = NULL;
       }
       return;
     }
     r_itr++;
-
-    if (r_itr != v.rbegin()) {
-      grandpar = *r_itr;
-    } 
     
     if (par->left == cur) {
       sibling = par->right;
@@ -298,23 +299,67 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
     }
 
     if (cur->IsExternal()) {
-      if (grandpar != NULL) {
-        grandpar->ReplaceChild(par, sibling);
-        delete cur;
-        delete par;
+      swapNodes(par, sibling);
+
+      delete cur;
+      delete sibling;
+      return;
+    }
+
+    if (par->color == black && sibling->color == black && !sibling->has_red_child()) {
+      sibling->color = red;
+      return;
+    }
+
+    if (sibling->color == red) {
+      par->color = red;
+      sibling->color = black;
+      if (sibling == par->right) {
+        rotateLeft(par);
       } else {
-          // ASSERT(root_ == par)
-          root_-> = sibling;
-          if (root_ != Null && root_->color != black) {
-            root_color = black;
-          }
-          delete cur;
-          delete par;
-          return;
+        rotateRight(par);
+      }
+      return;
+    }
+
+    if (par->color == red & &sibling->color == black && !sibling->has_red_child()) {
+      par->color = black;
+      sibling->color = red;
+      return;
+    }
+
+    if (sibling == par->right) {
+      if (sibling->color == black && sibling->right->color == red) {
+        sibling->color = par->color;
+        sibling->right->color = black;
+        par->color = black;
+        rotateLeft(par);
+        return;
+      }
+      if (sibling->color == black && sibling->left->color == red) {
+        sibling->left->color = par->color;
+        par->color = black;
+        rotateRight(sibling);
+        rotateLeft(par);
+        return;
       }
     } else {
-      if (sibling )
+      if (sibling->color == black && sibling->left->color == red) {
+        sibling->color = par->color;
+        sibling->left->color = black;
+        par->color = black;
+        rotateRight(par);
+        return;
+      }
+      if (sibling->color == black && sibling->right->color == red) {
+        sibling->right->color = par->color;
+        par->color = black;
+        rotateLeft(sibling);
+        rotateRight(par);
+        return;
+      }
     }
+    
   }
   
 }
