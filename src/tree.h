@@ -94,6 +94,13 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::Search(KeyType key) {
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
+  if (root_ == NULL) {
+    root_ = new treenode_t(true);
+    root_->color = black;
+    root_->key = key;
+    root_->value = value;
+    return;
+  } 
 // 1. make the top-down invariant true initially
   treenode_t *x = root_;
   if (x->color == red) x->color = black;
