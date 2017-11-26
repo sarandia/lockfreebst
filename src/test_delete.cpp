@@ -38,6 +38,10 @@ int main() {
         cout << "Inserted " << *itr << endl;
     }
 
+    if (!t->checkCompleteness()) {
+        cout << "Check completeness failed!" << endl;
+    }
+
     for (auto itr = remain_set.begin(); itr != remain_set.end(); itr++) {
         TreeNode<int, int> *found = t->Search(*itr);
         if (found == NULL) {
