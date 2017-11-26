@@ -591,16 +591,22 @@ void RBTree<KeyType, ValueType>::swapNodes(treenode_t *node1, treenode_t *node2)
   color_t tmpColor = node1->color;
   treenode_t *tmpLeft = node1->left;
   treenode_t *tmpRight = node1->right;
+  bool tmpIsExternal_ = node1->isExternal_;
+  ValueType tmpValue = node1->value;
 
   node1->key = node2->key;
   node1->color = node2->color;
   node1->left = node2->left;
   node1->right = node2->right;
+  node1->isExternal_ = node2->isExternal_;
+  node1->value = node2->value;
 
   node2->key = tmpKey;
   node2->color = tmpColor;
   node2->left = tmpLeft;
   node2->right = tmpRight;
+  node2->isExternal_ = tmpIsExternal_;
+  node2->value = tmpValue;
 }
 
 template <typename KeyType, typename ValueType>
