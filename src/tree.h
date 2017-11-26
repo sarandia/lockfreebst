@@ -118,11 +118,6 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::Search(KeyType key) {
       if (cur->key == key) {
         return cur;
       }
-      else {
-        std::cout << "ERROR: Search() found some error in external node value. "
-          "cur key is " << cur->key << std::endl;
-        exit(1);
-      }
     }
   }
   return NULL;
