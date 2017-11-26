@@ -27,6 +27,8 @@ class TreeNode {
   }
 
   bool IsExternal();
+  bool IsComplete();
+
   ValueType GetValue();
   bool ReplaceChild(TreeNode<KeyType, ValueType> *oldchld, TreeNode<KeyType, ValueType> *newchld) {
     if (left == oldchld) {
@@ -39,7 +41,7 @@ class TreeNode {
     }
     return false;
   }
-  
+
   private:
   KeyType key;
   color_t color;
@@ -66,6 +68,7 @@ class RBTree {
 
   void buildVector(treenode_t *root, int depth, std::vector<std::vector<treenode_t *> > &ret);
   void print_tree();
+  bool checkCompleteness();
   
   private:
   treenode_t *root_;
@@ -82,6 +85,19 @@ class RBTree {
 template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::IsExternal() {
   return isExternal_;
+}
+
+template <typename KeyType, typename ValueType>
+bool TreeNode<KeyType, ValueType>::IsComplete() {
+  if (left == NULL && right == NULL) {
+    return true;
+  }
+
+  if (left != NULL && right != NULL) {
+    return left->IsComplete() && right->IsComplete();
+  }
+
+  return false;
 }
 
 template <typename KeyType, typename ValueType>
@@ -406,35 +422,37 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
 
   cur = *r_itr;
 
+  r_itr++;
+  if (r_itr != v.rend()) {
+    par = *r_itr;
+  } else {
+    root_ = NULL;
+    delete cur;
+    return;
+  }
+
+  if (par->left == cur) {
+    sibling = par->right;
+  } else {
+    sibling = par->left;
+  }
+
   if (cur->IsExternal()) {
-
-    r_itr++;
-
-    if (r_itr != v.rend()) {
-      par = *r_itr;
-    } else {
-      root_ = NULL;
-      delete cur;
-      return;
-    }
-    
-    if (par->left == cur) {
-      sibling = par->right;
-    } else {
-      sibling = par->left;
-    }
 
     swapNodes(par, sibling);
 
+    if (sibling->color == red) {
+      delete cur;
+      delete sibling;
+      return;
+    }
+
     delete cur;
     delete sibling;
-  }
 
-  while (r_itr != v.rend()) {
+    cur = par;
 
-    cur = *r_itr;
     r_itr++;
-    
     if (r_itr != v.rend()) {
       par = *r_itr;
     } else {
@@ -445,30 +463,61 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
       }
       return;
     }
-    
+
     if (par->left == cur) {
       sibling = par->right;
     } else {
       sibling = par->left;
     }
+  }
+
+  while (true) {
 
     if (par->color == black && sibling->color == black && !has_red_child(sibling)) {
+
       sibling->color = red;
-      continue;
+
+      cur = par;
+
+      r_itr++;
+      if (r_itr != v.rend()) {
+        par = *r_itr;
+      } else {
+        if (!cur->IsExternal()) {
+          if (cur->color == red) {
+            cur->color = black;
+          }
+        }
+        return;
+      }
+
+      if (par->left == cur) {
+        sibling = par->right;
+      } else {
+        sibling = par->left;
+      }
     } else {
       break;
     }
   }
 
-  if (sibling->color == red) {
+  if (cur->color == black && par->color == black && sibling->color == red) {
     par->color = red;
     sibling->color = black;
     if (sibling == par->right) {
       rotateLeft(par);
-      cur = par->left->left;
+
+      par = par->left;
+
+      cur = par->left;
+      sibling = par->right;
     } else {
       rotateRight(par);
-      cur = par->right->right;
+
+      par = par->right;
+
+      cur = par->right;
+      sibling = par->left;
     }
   }
 
@@ -599,6 +648,20 @@ void RBTree<KeyType, ValueType>::print_tree() {
   printf("Depth = %lu\n", ret.size());
   printf("Number of Nodes = %d\n", n_nodes);
 }
+
+template <typename KeyType, typename ValueType>
+bool RBTree<KeyType, ValueType>::checkCompleteness() {
+  if (root_ == NULL) {
+    return true;
+  }
+
+  if (root_ != NULL && root_->left == NULL && root_->right == NULL) {
+    return true;
+  }
+
+  return root_->IsComplete();
+};
+
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::swapNodes(treenode_t *node1, treenode_t *node2) {

@@ -11,10 +11,10 @@ int main() {
 
     cout << "Successfully created rb tree object" << endl;
     int insert_start = -5;
-    int insert_end = 10;
+    int insert_end = 1000;
 
     int delete_start = 1;
-    int delete_end = 5;
+    int delete_end = 100;
 
     set<int> insert_set;
     set<int> delete_set;
@@ -37,10 +37,27 @@ int main() {
         //t->print_tree();
         cout << "Inserted " << *itr << endl;
     }
+
+    if (!t->checkCompleteness()) {
+        cout << "Check completeness failed!" << endl;
+    }
+
+    for (auto itr = remain_set.begin(); itr != remain_set.end(); itr++) {
+        TreeNode<int, int> *found = t->Search(*itr);
+        if (found == NULL) {
+            cout << "ERROR: Key " << *itr << " was inserted but not found!!! (Before delete)" << endl;
+        }
+    }
+
+    //t->print_tree();
+    cout << "***********************************************************" << endl;
+
     for (auto itr = delete_set.begin(); itr != delete_set.end(); itr++) {
         t->Remove(*itr);
         //t->print_tree();
+
         cout << "Removed " << *itr << endl;
+        //cout << "***********************************************************" << endl;
     }
     for (auto itr = remain_set.begin(); itr != remain_set.end(); itr++) {
         TreeNode<int, int> *found = t->Search(*itr);
@@ -55,6 +72,6 @@ int main() {
             cout << "ERROR: Key " << *itr << " was deleted but found!!!" << endl;
         }
     }
-    t->print_tree();
+    //t->print_tree();
     return 0;
 }
