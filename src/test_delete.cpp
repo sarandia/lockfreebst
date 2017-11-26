@@ -11,10 +11,10 @@ int main() {
 
     cout << "Successfully created rb tree object" << endl;
     int insert_start = -5;
-    int insert_end = 10;
+    int insert_end = 1000;
 
     int delete_start = 1;
-    int delete_end = 5;
+    int delete_end = 100;
 
     set<int> insert_set;
     set<int> delete_set;
@@ -45,7 +45,7 @@ int main() {
         }
     }
 
-    t->print_tree();
+    //t->print_tree();
     cout << "***********************************************************" << endl;
 
     for (auto itr = delete_set.begin(); itr != delete_set.end(); itr++) {
@@ -68,6 +68,6 @@ int main() {
             cout << "ERROR: Key " << *itr << " was deleted but found!!!" << endl;
         }
     }
-    t->print_tree();
+    //t->print_tree();
     return 0;
 }

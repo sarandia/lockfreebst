@@ -409,7 +409,6 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
   if (cur->IsExternal()) {
 
     r_itr++;
-
     if (r_itr != v.rend()) {
       par = *r_itr;
     } else {
@@ -434,13 +433,12 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
 
     delete cur;
     delete sibling;
+    cur = par;
   }
 
-  while (r_itr != v.rend()) {
+  while (true) {
 
-    cur = *r_itr;
     r_itr++;
-    
     if (r_itr != v.rend()) {
       par = *r_itr;
     } else {
@@ -460,21 +458,48 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
 
     if (par->color == black && sibling->color == black && !has_red_child(sibling)) {
       sibling->color = red;
-      continue;
+
+      cur = par;
     } else {
       break;
     }
   }
 
-  if (sibling->color == red) {
+  r_itr++;
+  if (r_itr != v.rend()) {
+    par = *r_itr;
+  } else {
+    if (!cur->IsExternal()) {
+      if (cur->color == red) {
+        cur->color = black;
+      }
+    }
+    return;
+  }
+
+  if (par->left == cur) {
+    sibling = par->right;
+  } else {
+    sibling = par->left;
+  }
+
+  if (cur->color == black && par->color == black && sibling->color == red) {
     par->color = red;
     sibling->color = black;
     if (sibling == par->right) {
       rotateLeft(par);
-      cur = par->left->left;
+
+      par = par->left;
+
+      cur = par->left;
+      sibling = par->right;
     } else {
       rotateRight(par);
-      cur = par->right->right;
+
+      par = par->right;
+
+      cur = par->right;
+      sibling = par->left;
     }
   }
 
