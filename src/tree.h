@@ -137,14 +137,17 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     root_->value = value;
     return;
   } 
+  if (key == 1) {
+    printf("a");
+  }
 // 1. make the top-down invariant true initially
   treenode_t *x = root_;
   if (x->color == red) x->color = black;
-  if (x->left != NULL && x->left->color == red \
-      && x->right != NULL && x->right->color == red) {
-    x->left->color = black;
-    x->right->color = black;
-  }
+  //if (x->left != NULL && x->left->color == red \
+  //    && x->right != NULL && x->right->color == red) {
+  //  x->left->color = black;
+  //  x->right->color = black;
+  //}
   // 2. walking down from the current node
   treenode_t *y = x;
   treenode_t *prev = NULL;
@@ -175,7 +178,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       }
     }
     // c. color z red and its two children black, then proceed as bottom-up
-    if (successiveBlk == 2) {
+    /*if (successiveBlk == 2) {
       treenode_t *z = y;
       z->color = red;
       z->left->color = black;
@@ -195,7 +198,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       q.clear();
       // repeat the general step
       continue;
-    }
+    }*/
     if (key <= y->key) {
       y = y->left;
     }
@@ -203,10 +206,12 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       y = y->right;
     }
     // b. a black node with a black child is reached
-    if (prev->color == black && y->color == black) {
-      // repeat current node x by y
-      x = y;
-      q.clear();
+    if (y->color == black && !y->IsExternal()) {
+      if (y->left->color == black || y->right->color == black) {
+        // repeat current node x by y
+        x = y;
+        q.clear();
+      }
     }
 
   } // while
@@ -248,11 +253,14 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   }
   q.push_back(new_int);
   //q.push_back(new_item);
-  //for (auto key:q) {
-  //  std::cout << key->key << ",";
-  //}
-  //std::cout << std::endl;
+  for (auto key:q) {
+    std::cout << key->key << ",";
+  }
+  std::cout << std::endl;
   //q.pop_back();
+  //std::cout << "FIXING INSERT:..." << std::endl;
+  //print_tree();
+  //std::cout << "------------------" << std::endl;
   fix_insert(q);
 }
 
@@ -315,8 +323,14 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
         window_root->color = black;
       }
     }
+    else if (window_root->color == black && cur->color == red && sibling->color == red) {
+      window_root->color = red;
+      cur->color = red;
+      sibling->color = black;
+    }
     // 3-d and e, cur is red and has a red child
-    else if (window_root->color == black && cur->color == red && (cur->left->color == red \
+    else if (window_root->color == black && cur->color == red && \
+      sibling->color == black && (cur->left->color == red \
       || cur->right->color == red)) {
       // re-color the tree, then rotate
       cur->color = black;
@@ -340,6 +354,7 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
           rotateLeft(cur);
         }
         rotateLeft(window_root);
+        std::cout << "rotating on key: " << window_root->key << " color: " << window_root->color << std::endl;
         window_root->color = black;
         window_root->left->color = red;
         window_root->left->left->color = black;
@@ -569,9 +584,11 @@ template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::print_tree() {
   std::vector<std::vector<treenode_t *> > ret;
   buildVector(root_, 0, ret);
+  int n_nodes = 0;
   for (int level = 0; level < ret.size(); level++) {
     for (int node_i = 0; node_i < ret[level].size(); node_i++) {
       treenode_t *cur = ret[level][node_i];
+      n_nodes ++;
       std::string cl;
       if (cur->color == black) {
         cl = "black";
@@ -583,6 +600,8 @@ void RBTree<KeyType, ValueType>::print_tree() {
     }
     printf("\n");
   }
+  printf("Depth = %lu\n", ret.size());
+  printf("Number of Nodes = %d\n", n_nodes);
 }
 
 template <typename KeyType, typename ValueType>
