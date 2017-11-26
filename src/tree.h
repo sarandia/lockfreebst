@@ -158,12 +158,12 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       if (y->left->color == red && y->right->color == red) {
         successiveBlk ++;
       }
-      else if (y->left->color == black && key <= y->key){
-        successiveBlk ++;
-      }
-      else if (y->right->color == black && key > y->key) {
-        successiveBlk ++;
-      }
+      //else if (y->left->color == black && key <= y->key){
+      //  successiveBlk ++;
+      //}
+      //else if (y->right->color == black && key > y->key) {
+      //  successiveBlk ++;
+      //}
       else {
         successiveBlk = 0;
       }
@@ -174,7 +174,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       }
     }
     // c. color z red and its two children black, then proceed as bottom-up
-    /*if (successiveBlk == 2) {
+    if (successiveBlk == 4) {
       treenode_t *z = y;
       z->color = red;
       z->left->color = black;
@@ -194,7 +194,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       q.clear();
       // repeat the general step
       continue;
-    }*/
+    }
     if (key <= y->key) {
       y = y->left;
     }
