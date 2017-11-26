@@ -118,6 +118,7 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::Search(KeyType key) {
       if (cur->key == key) {
         return cur;
       }
+      return NULL;
     }
   }
   return NULL;
