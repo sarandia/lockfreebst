@@ -425,6 +425,12 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
     }
 
     swapNodes(par, sibling);
+    
+    if (sibling->color == red) {
+      delete cur;
+      delete sibling;
+      return;
+    }
 
     delete cur;
     delete sibling;
