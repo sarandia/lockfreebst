@@ -1,3 +1,6 @@
+#ifndef TREE_H
+#define TREE_H
+
 /* based on Tarjan's Top-down RB Tree Algorithm */
 #include <vector>
 #include <iterator>
@@ -27,9 +30,14 @@ class TreeNode {
   }
 
   bool IsExternal();
+  bool IsBlack();
   bool IsComplete();
 
+  KeyType GetKey();
   ValueType GetValue();
+  TreeNode<KeyType, ValueType> * GetLeft();
+  TreeNode<KeyType, ValueType> * GetRight();
+
   bool ReplaceChild(TreeNode<KeyType, ValueType> *oldchld, TreeNode<KeyType, ValueType> *newchld) {
     if (left == oldchld) {
       left = newchld;
@@ -69,6 +77,7 @@ class RBTree {
   void buildVector(treenode_t *root, int depth, std::vector<std::vector<treenode_t *> > &ret);
   void print_tree();
   bool checkCompleteness();
+  treenode_t *GetRoot() {return root_;}
   bool checkBlackDepth();
   
   private:
@@ -90,6 +99,11 @@ bool TreeNode<KeyType, ValueType>::IsExternal() {
 }
 
 template <typename KeyType, typename ValueType>
+bool TreeNode<KeyType, ValueType>::IsBlack() {
+  return color == black;
+}
+
+template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::IsComplete() {
   if (left == NULL && right == NULL) {
     return true;
@@ -103,6 +117,30 @@ bool TreeNode<KeyType, ValueType>::IsComplete() {
 }
 
 template <typename KeyType, typename ValueType>
+KeyType TreeNode<KeyType, ValueType>::GetKey() {
+  return key;
+};
+
+
+template <typename KeyType, typename ValueType>
+ValueType TreeNode<KeyType, ValueType>::GetValue() {
+  return value;
+};
+
+
+template <typename KeyType, typename ValueType>
+TreeNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::GetLeft() {
+  return left;
+};
+
+
+template <typename KeyType, typename ValueType>
+TreeNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::GetRight() {
+  return right;
+};
+
+
+    template <typename KeyType, typename ValueType>
 RBTree<KeyType, ValueType>::RBTree() {
   root_ = NULL;
 }
@@ -748,3 +786,5 @@ void RBTree<KeyType, ValueType>::rotateRight(treenode_t *parent) {
 }
 
 }
+
+#endif

@@ -2,6 +2,7 @@
 #include <set>
 #include <iterator>
 #include "tree.h"
+#include "treeprinter.h"
 
 using namespace lock_free_rbtree;
 using namespace std;
@@ -11,10 +12,10 @@ int main() {
 
     cout << "Successfully created rb tree object" << endl;
     int insert_start = -5;
-    int insert_end = 1000;
+    int insert_end = 10;
 
     int delete_start = 1;
-    int delete_end = 100;
+    int delete_end = 10;
 
     set<int> insert_set;
     set<int> delete_set;
@@ -50,6 +51,8 @@ int main() {
     }
 
     //t->print_tree();
+    print2D(t->GetRoot());
+
     cout << "***********************************************************" << endl;
 
     for (auto itr = delete_set.begin(); itr != delete_set.end(); itr++) {
