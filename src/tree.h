@@ -285,7 +285,7 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
   while (is_violation) {
     is_violation = false;
     treenode_t *cur = q.back();
-    if (cur->key == 5) {
+    if (cur->key == 4) {
       printf("a");
     }
     if (cur->color == red) {
