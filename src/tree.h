@@ -20,6 +20,10 @@ class TreeNode {
     isExternal_ = ext;
     left = NULL;
     right = NULL;
+    value = -1;
+    if (ext) {
+      color = black;
+    }
   }
 
   bool IsExternal();
@@ -72,6 +76,7 @@ class RBTree {
   void swapNodes(treenode_t *node1, treenode_t *node2);
   void rotateLeft(treenode_t *parent);
   void rotateRight(treenode_t *parent);
+  void delete_tree(treenode_t *cur);
 };
 
 template <typename KeyType, typename ValueType>
@@ -86,12 +91,41 @@ RBTree<KeyType, ValueType>::RBTree() {
 
 template <typename KeyType, typename ValueType>
 RBTree<KeyType, ValueType>::~RBTree() {
-// TODO
+  delete_tree(root_);
+}
+
+template <typename KeyType, typename ValueType>
+void RBTree<KeyType, ValueType>::delete_tree(treenode_t *cur) {
+  if (cur == NULL) return;
+  delete_tree(cur->left);
+  delete_tree(cur->right);
+  delete cur;
 }
 
 template <typename KeyType, typename ValueType>
 TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::Search(KeyType key) {
-// TODO
+  treenode_t *cur = root_;
+  while (cur != NULL) {
+    if (!cur->IsExternal()) {
+      if (key <= cur->key) {
+        cur = cur->left;
+      }
+      else {
+        cur = cur->right;
+      }
+    }
+    else {
+      if (cur->key == key) {
+        return cur;
+      }
+      else {
+        std::cout << "ERROR: Search() found some error in external node value. "
+          "cur key is " << cur->key << std::endl;
+        exit(1);
+      }
+    }
+  }
+  return NULL;
 }
 
 template <typename KeyType, typename ValueType>
@@ -113,14 +147,22 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   }
   // 2. walking down from the current node
   treenode_t *y = x;
-  treenode_t *prev;
+  treenode_t *prev = NULL;
   std::vector<treenode_t *> q;
   int successiveBlk = 0;
   while (!y->IsExternal()) {
     // check if node is black with 2 red chilren
+    //std::cout << "successiveBlk = " << successiveBlk << std::endl;
     q.push_back(y);
+    prev = y;
     if (y->color == black) {
       if (y->left->color == red && y->right->color == red) {
+        successiveBlk ++;
+      }
+      else if (y->left->color == black && key <= y->key){
+        successiveBlk ++;
+      }
+      else if (y->right->color == black && key > y->key) {
         successiveBlk ++;
       }
       else {
@@ -133,7 +175,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       }
     }
     // c. color z red and its two children black, then proceed as bottom-up
-    if (successiveBlk == 4) {
+    if (successiveBlk == 2) {
       treenode_t *z = y;
       z->color = red;
       z->left->color = black;
@@ -154,11 +196,10 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       // repeat the general step
       continue;
     }
-    prev = y;
     if (key <= y->key) {
       y = y->left;
     }
-    else if (key > y->key) { // to be re-visited 
+    else if (key > y->key) {
       y = y->right;
     }
     // b. a black node with a black child is reached
@@ -170,6 +211,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
 
   } // while
   // node y is external; must perform bottom-up insertion
+  //std::cout << "x = " << x->key << std::endl;
+  //if (!q.empty()) std::cout << "q[0] = " << q[0]->key << std::endl;
   if (y->key == key) return;
   treenode_t *new_int = new treenode_t(false);
   treenode_t *new_item = new treenode_t(true);
@@ -186,26 +229,42 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     new_int->right = y;
   }
   new_int->color = red;
-  if (new_int->key <= prev->key) {
-    prev->left = new_int;
+  if (prev != NULL) {
+    if (new_int->key <= prev->key) {
+      prev->left = new_int;
+    }
+    else {
+      prev->right = new_int;
+    }
   }
   else {
-    prev->right = new_int;
+    root_ = new_int;
   }
-  q.pop_back(); // pop off y
+  if (q.empty()) {
+    q.push_back(y);
+  }
+  if (q.back() == x && x->IsExternal()) {
+    q.pop_back(); // pop off y
+  }
   q.push_back(new_int);
+  //q.push_back(new_item);
+  //for (auto key:q) {
+  //  std::cout << key->key << ",";
+  //}
+  //std::cout << std::endl;
+  //q.pop_back();
   fix_insert(q);
- 
 }
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
+  if (q.size() == 1) return;
   bool is_violation = true;
   while (is_violation) {
     is_violation = false;
     treenode_t *cur = q.back();
     if (cur->color == red) {
-      treenode_t *parent = *(q.end() - 1);
+      treenode_t *parent = q[q.size()-2];
       treenode_t *sibling;
       if (cur->key <= parent->key) {
         sibling = parent->right;
@@ -214,13 +273,21 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
         sibling = parent->left;
       }
       if (parent == q[0]) break;
-      if (parent->color == red && sibling->color == red) {
+      if (parent->color == red) { //&& sibling->color == red) {
         is_violation = true;
-        treenode_t *grandparent = *(q.end() - 2);
+        treenode_t *grandparent = q[q.size()-3];
+        if (grandparent == q[0]) {
+          q.pop_back();
+          break;
+        }
         grandparent->color = red;
         parent->color = black;
         sibling->color = black;
         // we then go up by 1. The current node is now the parent
+        q.pop_back();
+        if (q.size() == 2) {
+          break;
+        }
         q.pop_back();
       }
     }
@@ -241,21 +308,44 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
     }
     // 3-c, both window_root and cur are red, and all children of cur are black
     // also, the sibling needs to be black
-    if (window_root->color == red && sibling->color == black && cur->color == red && \
-      cur->left->color == black && cur->right->color == black) {
-      // we color root to be black
-      window_root->color = black;
+    if (window_root->color == red && sibling->color == black && cur->color == red) {
+      if (((cur->left != NULL && cur->left->color == black) || cur->left == NULL) && \
+        ((cur->right != NULL && cur->right->color == black) || cur->right == NULL)) {
+        // color the node black
+        window_root->color = black;
+      }
     }
     // 3-d and e, cur is red and has a red child
-    if (window_root->color == black && cur->color == red && (cur->left->color == red \
+    else if (window_root->color == black && cur->color == red && (cur->left->color == red \
       || cur->right->color == red)) {
       // re-color the tree, then rotate
       cur->color = black;
       if (direction == 0) {
+        // 3e, left case
+        if (cur->right->color == red) {
+          rotateRight(cur);
+        }
         rotateRight(window_root);
+        std::cout << "rotating on key: " << window_root->key << " color: " << window_root->color << std::endl;
+        window_root->color = black;
+        window_root->right->color = red;
+        window_root->right->right->color = black;
+        window_root->left->color = red;
+        window_root->left->left->color = black;
+        window_root->left->right->color = black;
       }
       else {
+        // 3e, right case
+        if (cur->left->color == red) {
+          rotateLeft(cur);
+        }
         rotateLeft(window_root);
+        window_root->color = black;
+        window_root->left->color = red;
+        window_root->left->left->color = black;
+        window_root->right->color = red;
+        window_root->right->left->color = black;
+        window_root->right->right->color = black;
       }
     }
   }
