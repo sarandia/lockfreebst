@@ -78,6 +78,7 @@ class RBTree {
   void print_tree();
   bool checkCompleteness();
   treenode_t *GetRoot() {return root_;}
+  bool checkBlackDepth();
   
   private:
   treenode_t *root_;
@@ -89,6 +90,7 @@ class RBTree {
   void rotateLeft(treenode_t *parent);
   void rotateRight(treenode_t *parent);
   void delete_tree(treenode_t *cur);
+  int computeBlackDepth(treenode_t *curNode);
 };
 
 template <typename KeyType, typename ValueType>
@@ -187,7 +189,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     root_->value = value;
     return;
   } 
-  if (key == 1) {
+  if (key == 5) {
     printf("a");
   }
 // 1. make the top-down invariant true initially
@@ -212,12 +214,12 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       if (y->left->color == red && y->right->color == red) {
         successiveBlk ++;
       }
-      else if (y->left->color == black && key <= y->key){
-        successiveBlk ++;
-      }
-      else if (y->right->color == black && key > y->key) {
-        successiveBlk ++;
-      }
+      //else if (y->left->color == black && key <= y->key){
+      //  successiveBlk ++;
+      //}
+      //else if (y->right->color == black && key > y->key) {
+      //  successiveBlk ++;
+      //}
       else {
         successiveBlk = 0;
       }
@@ -228,7 +230,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       }
     }
     // c. color z red and its two children black, then proceed as bottom-up
-    /*if (successiveBlk == 2) {
+    if (successiveBlk == 4) {
       treenode_t *z = y;
       z->color = red;
       z->left->color = black;
@@ -248,7 +250,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       q.clear();
       // repeat the general step
       continue;
-    }*/
+    }
     if (key <= y->key) {
       y = y->left;
     }
@@ -321,6 +323,9 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
   while (is_violation) {
     is_violation = false;
     treenode_t *cur = q.back();
+    if (cur->key == 5) {
+      printf("a");
+    }
     if (cur->color == red) {
       treenode_t *parent = q[q.size()-2];
       treenode_t *sibling;
@@ -685,6 +690,32 @@ void RBTree<KeyType, ValueType>::print_tree() {
   }
   printf("Depth = %lu\n", ret.size());
   printf("Number of Nodes = %d\n", n_nodes);
+}
+
+template <typename KeyType, typename ValueType>
+bool RBTree<KeyType, ValueType>::checkBlackDepth() {
+    return (computeBlackDepth(root_) != -1);
+}
+
+template <typename KeyType, typename ValueType>
+int RBTree<KeyType, ValueType>::computeBlackDepth(treenode_t *curNode) {
+    // For an empty subtree the answer is obvious
+    if (curNode->IsExternal())
+        return 1; 
+    // Computes the height for the left and right child recursively
+    int leftHeight = computeBlackDepth(curNode->left);
+    int rightHeight = computeBlackDepth(curNode->right);
+    int add = (curNode->color == black) ? 1 : 0;
+    // The current subtree is not a red black tree if and only if
+    // one or more of current node's children is a root of an invalid tree
+    // or they contain different number of black nodes on a path to a null node.
+    if (leftHeight == -1 || rightHeight == -1 || leftHeight != rightHeight) {
+        printf("The subtree rooted at key = %d is not a valid RB tree.\n", curNode->key);
+        return -1; 
+    }
+    else {
+        return leftHeight + add;
+    }
 }
 
 template <typename KeyType, typename ValueType>
