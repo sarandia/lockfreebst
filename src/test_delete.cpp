@@ -50,10 +50,10 @@ int main() {
 
     for (auto itr = delete_set.begin(); itr != delete_set.end(); itr++) {
         t->Remove(*itr);
-        t->print_tree();
+        //t->print_tree();
 
         cout << "Removed " << *itr << endl;
-        cout << "***********************************************************" << endl;
+        //cout << "***********************************************************" << endl;
     }
     for (auto itr = remain_set.begin(); itr != remain_set.end(); itr++) {
         TreeNode<int, int> *found = t->Search(*itr);
