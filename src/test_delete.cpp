@@ -48,6 +48,13 @@ int main() {
             cout << "ERROR: Key " << *itr << " was inserted but not found!!!" << endl;
         }
     }
+
+    for (auto itr = delete_set.begin(); itr != delete_set.end(); itr++) {
+        TreeNode<int, int> *found = t->Search(*itr);
+        if (found != NULL) {
+            cout << "ERROR: Key " << *itr << " was deleted but found!!!" << endl;
+        }
+    }
     t->print_tree();
     return 0;
 }
