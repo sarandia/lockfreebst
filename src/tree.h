@@ -189,9 +189,6 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     root_->value = value;
     return;
   } 
-  if (key == 5) {
-    printf("a");
-  }
 // 1. make the top-down invariant true initially
   treenode_t *x = root_;
   if (x->color == red) x->color = black;
@@ -296,6 +293,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   }
   else {
     root_ = new_int;
+    root_->color = black;
   }
   if (q.empty()) {
     q.push_back(y);
@@ -305,13 +303,14 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   }
   q.push_back(new_int);
   //q.push_back(new_item);
-  for (auto key:q) {
-    std::cout << key->key << ",";
-  }
-  std::cout << std::endl;
+  //for (auto key:q) {
+  //  std::cout << key->key << ",";
+  //}
+  //std::cout << std::endl;
   //q.pop_back();
   //std::cout << "FIXING INSERT:..." << std::endl;
   //print_tree();
+  //print2D(root_);
   //std::cout << "------------------" << std::endl;
   fix_insert(q);
 }
@@ -329,12 +328,6 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
     if (cur->color == red) {
       treenode_t *parent = q[q.size()-2];
       treenode_t *sibling;
-      if (cur->key <= parent->key) {
-        sibling = parent->right;
-      }
-      else {
-        sibling = parent->left;
-      }
       if (parent == q[0]) break;
       if (parent->color == red) { //&& sibling->color == red) {
         is_violation = true;
@@ -343,11 +336,19 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
           q.pop_back();
           break;
         }
-        grandparent->color = red;
-        parent->color = black;
-        sibling->color = black;
-        // we then go up by 1. The current node is now the parent
-        q.pop_back();
+        if (parent->key <= grandparent->key) {
+          sibling = grandparent->right;
+        }
+        else {
+          sibling = grandparent->left;
+        }
+        if (sibling->color == red) {
+          grandparent->color = red;
+          parent->color = black;
+          sibling->color = black;
+          // we then go up by 1. The current node is now the parent
+          q.pop_back();
+        }
         if (q.size() == 2) {
           break;
         }
@@ -379,8 +380,8 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
       }
     }
     else if (window_root->color == black && cur->color == red && sibling->color == red) {
-      window_root->color = red;
-      cur->color = red;
+      window_root->color = black;
+      cur->color = black;
       sibling->color = black;
     }
     // 3-d and e, cur is red and has a red child
@@ -392,10 +393,10 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
       if (direction == 0) {
         // 3e, left case
         if (cur->right->color == red) {
-          rotateRight(cur);
+          rotateLeft(cur);
         }
         rotateRight(window_root);
-        std::cout << "rotating on key: " << window_root->key << " color: " << window_root->color << std::endl;
+        std::cout << "rotating dir = 0 on key: " << window_root->key << " color: " << window_root->color << std::endl;
         window_root->color = black;
         window_root->right->color = red;
         window_root->right->right->color = black;
@@ -406,10 +407,10 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
       else {
         // 3e, right case
         if (cur->left->color == red) {
-          rotateLeft(cur);
+          rotateRight(cur);
         }
         rotateLeft(window_root);
-        std::cout << "rotating on key: " << window_root->key << " color: " << window_root->color << std::endl;
+        std::cout << "rotating dir = 1 on key: " << window_root->key << " color: " << window_root->color << std::endl;
         window_root->color = black;
         window_root->left->color = red;
         window_root->left->left->color = black;

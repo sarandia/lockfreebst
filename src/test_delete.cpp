@@ -11,11 +11,11 @@ int main() {
     RBTree<int, int> *t = new RBTree<int, int>();
 
     cout << "Successfully created rb tree object" << endl;
-    int insert_start = -5;
-    int insert_end = 10;
+    int insert_start = 1;
+    int insert_end = 10000;
 
-    int delete_start = 1;
-    int delete_end = 10;
+    int delete_start = 1250;
+    int delete_end = 2250;
 
     set<int> insert_set;
     set<int> delete_set;
@@ -51,7 +51,7 @@ int main() {
     }
 
     //t->print_tree();
-    print2D(t->GetRoot());
+    //print2D(t->GetRoot());
 
     cout << "***********************************************************" << endl;
 
