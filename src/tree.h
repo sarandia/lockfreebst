@@ -33,10 +33,17 @@ class TreeNode {
   bool IsBlack();
   bool IsComplete();
 
+  void SetExternal(bool new_isExt);
   KeyType GetKey();
   ValueType GetValue();
+  void SetKey(KeyType new_key);
+  void SetValue(ValueType new_value);
+  color_t GetColor();
+  void SetColor(color_t new_color);
   TreeNode<KeyType, ValueType> * GetLeft();
   TreeNode<KeyType, ValueType> * GetRight();
+  void SetLeft(TreeNode<KeyType, ValueType> *new_left);
+  void SetRight(TreeNode<KeyType, ValueType> *new_right);
 
   bool ReplaceChild(TreeNode<KeyType, ValueType> *oldchld, TreeNode<KeyType, ValueType> *newchld) {
     if (left == oldchld) {
@@ -139,8 +146,42 @@ TreeNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::GetRight() {
   return right;
 };
 
+template <typename KeyType, typename ValueType>
+void TreeNode<KeyType, ValueType>::SetExternal(bool new_isExt) {
+  isExternal_ = new_isExt;
+}
 
-    template <typename KeyType, typename ValueType>
+template <typename KeyType, typename ValueType>
+void TreeNode<KeyType, ValueType>::SetKey(KeyType new_key) {
+  key = new_key;
+}
+
+template <typename KeyType, typename ValueType>
+void TreeNode<KeyType, ValueType>::SetValue(ValueType new_value) {
+  value = new_value;
+}
+
+template <typename KeyType, typename ValueType>
+color_t TreeNode<KeyType, ValueType>::GetColor() {
+  return color;
+}
+
+template <typename KeyType, typename ValueType>
+void TreeNode<KeyType, ValueType>::SetColor(color_t new_color) {
+  color = new_color;
+}
+
+template <typename KeyType, typename ValueType>
+void TreeNode<KeyType, ValueType>::SetLeft(TreeNode<KeyType, ValueType> *new_left) {
+  left = new_left;
+}
+
+template <typename KeyType, typename ValueType>
+void TreeNode<KeyType, ValueType>::SetRight(TreeNode<KeyType, ValueType> *new_right) {
+  right = new_right;
+}
+
+template <typename KeyType, typename ValueType>
 RBTree<KeyType, ValueType>::RBTree() {
   root_ = NULL;
 }
@@ -163,15 +204,15 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::Search(KeyType key) {
   treenode_t *cur = root_;
   while (cur != NULL) {
     if (!cur->IsExternal()) {
-      if (key <= cur->key) {
-        cur = cur->left;
+      if (key <= cur->GetKey()) {
+        cur = cur->GetLeft();
       }
       else {
-        cur = cur->right;
+        cur = cur->GetRight();
       }
     }
     else {
-      if (cur->key == key) {
+      if (cur->GetKey() == key) {
         return cur;
       }
       return NULL;
@@ -184,19 +225,14 @@ template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   if (root_ == NULL) {
     root_ = new treenode_t(true);
-    root_->color = black;
-    root_->key = key;
-    root_->value = value;
+    root_->SetColor(black);
+    root_->SetKey(key);
+    root_->SetValue(value);
     return;
   } 
-// 1. make the top-down invariant true initially
+  // 1. make the top-down invariant true initially
   treenode_t *x = root_;
-  if (x->color == red) x->color = black;
-  //if (x->left != NULL && x->left->color == red \
-  //    && x->right != NULL && x->right->color == red) {
-  //  x->left->color = black;
-  //  x->right->color = black;
-  //}
+  if (x->GetColor() == red) x->SetColor(black);
   // 2. walking down from the current node
   treenode_t *y = x;
   treenode_t *prev = NULL;
@@ -204,43 +240,36 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   int successiveBlk = 0;
   while (!y->IsExternal()) {
     // check if node is black with 2 red chilren
-    //std::cout << "successiveBlk = " << successiveBlk << std::endl;
     q.push_back(y);
     prev = y;
-    if (y->color == black) {
-      if (y->left->color == red && y->right->color == red) {
+    if (y->GetColor() == black) {
+      if (y->GetLeft()->GetColor() == red && y->GetRight()->GetColor() == red) {
         successiveBlk ++;
       }
-      //else if (y->left->color == black && key <= y->key){
-      //  successiveBlk ++;
-      //}
-      //else if (y->right->color == black && key > y->key) {
-      //  successiveBlk ++;
-      //}
       else {
         successiveBlk = 0;
       }
     }
     else {
-      if (prev->color == red) {
+      if (prev->GetColor() == red) {
         successiveBlk = 0;
       }
     }
     // c. color z red and its two children black, then proceed as bottom-up
     if (successiveBlk == 4) {
       treenode_t *z = y;
-      z->color = red;
-      z->left->color = black;
-      z->right->color = black;
+      z->SetColor(red);
+      z->GetLeft()->SetColor(black);
+      z->GetRight()->SetColor(black);
       // fix color problems
       fix_insert(q);
       // replace the current node x by the child of z along the access path
-      if (key < z->key) {
-        x = z->left;
+      if (key < z->GetKey()) {
+        x = z->GetLeft();
         y = x;
       }
       else {
-        x = z->right;
+        x = z->GetRight();
         y = x;
       }
       successiveBlk = 0;
@@ -248,15 +277,15 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       // repeat the general step
       continue;
     }
-    if (key <= y->key) {
-      y = y->left;
+    if (key <= y->GetKey()) {
+      y = y->GetLeft();
     }
-    else if (key > y->key) {
-      y = y->right;
+    else if (key > y->GetKey()) {
+      y = y->GetRight();
     }
     // b. a black node with a black child is reached
-    if (y->color == black && !y->IsExternal()) {
-      if (y->left->color == black || y->right->color == black) {
+    if (y->GetColor() == black && !y->IsExternal()) {
+      if (y->GetLeft()->GetColor() == black || y->GetRight()->GetColor() == black) {
         // repeat current node x by y
         x = y;
         q.clear();
@@ -267,33 +296,33 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   // node y is external; must perform bottom-up insertion
   //std::cout << "x = " << x->key << std::endl;
   //if (!q.empty()) std::cout << "q[0] = " << q[0]->key << std::endl;
-  if (y->key == key) return;
+  if (y->GetKey() == key) return;
   treenode_t *new_int = new treenode_t(false);
   treenode_t *new_item = new treenode_t(true);
-  new_item->key = key;
-  new_item->value = value;
-  if (y->key <= key) {
-    new_int->key = y->key;
-    new_int->left = y;
-    new_int->right = new_item;
+  new_item->SetKey(key);
+  new_item->SetValue(value);
+  if (y->GetKey() <= key) {
+    new_int->SetKey(y->GetKey());
+    new_int->SetLeft(y);
+    new_int->SetRight(new_item);
   }
   else {
-    new_int->key = key;
-    new_int->left = new_item;
-    new_int->right = y;
+    new_int->SetKey(key);
+    new_int->SetLeft(new_item);
+    new_int->SetRight(y);
   }
-  new_int->color = red;
+  new_int->SetColor(red);
   if (prev != NULL) {
-    if (new_int->key <= prev->key) {
-      prev->left = new_int;
+    if (new_int->GetKey() <= prev->GetKey()) {
+      prev->SetLeft(new_int);
     }
     else {
-      prev->right = new_int;
+      prev->SetRight(new_int);
     }
   }
   else {
     root_ = new_int;
-    root_->color = black;
+    root_->SetColor(black);
   }
   if (q.empty()) {
     q.push_back(y);
@@ -302,7 +331,6 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     q.pop_back(); // pop off y
   }
   q.push_back(new_int);
-  //q.push_back(new_item);
   //for (auto key:q) {
   //  std::cout << key->key << ",";
   //}
@@ -322,30 +350,27 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
   while (is_violation) {
     is_violation = false;
     treenode_t *cur = q.back();
-    if (cur->key == 4) {
-      printf("a");
-    }
-    if (cur->color == red) {
+    if (cur->GetColor() == red) {
       treenode_t *parent = q[q.size()-2];
       treenode_t *sibling;
       if (parent == q[0]) break;
-      if (parent->color == red) { //&& sibling->color == red) {
+      if (parent->GetColor() == red) { //&& sibling->color == red) {
         is_violation = true;
         treenode_t *grandparent = q[q.size()-3];
         if (grandparent == q[0]) {
           q.pop_back();
           break;
         }
-        if (parent->key <= grandparent->key) {
-          sibling = grandparent->right;
+        if (parent->GetKey() <= grandparent->GetKey()) {
+          sibling = grandparent->GetRight();
         }
         else {
-          sibling = grandparent->left;
+          sibling = grandparent->GetLeft();
         }
-        if (sibling->color == red) {
-          grandparent->color = red;
-          parent->color = black;
-          sibling->color = black;
+        if (sibling->GetColor() == red) {
+          grandparent->SetColor(red);
+          parent->SetColor(black);
+          sibling->SetColor(black);
           // we then go up by 1. The current node is now the parent
           q.pop_back();
         }
@@ -364,59 +389,59 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
     treenode_t *sibling;
     int direction = 0;
     if (window_root->left == q[1]) {
-      sibling = window_root->right;
+      sibling = window_root->GetRight();
     }
     else {
-      sibling = window_root->left;
+      sibling = window_root->GetLeft();
       direction = 1;
     }
     // 3-c, both window_root and cur are red, and all children of cur are black
     // also, the sibling needs to be black
-    if (window_root->color == red && sibling->color == black && cur->color == red) {
-      if (((cur->left != NULL && cur->left->color == black) || cur->left == NULL) && \
-        ((cur->right != NULL && cur->right->color == black) || cur->right == NULL)) {
+    if (window_root->GetColor() == red && sibling->GetColor() == black && cur->GetColor() == red) {
+      if (((cur->GetLeft() != NULL && cur->GetLeft()->GetColor() == black) || cur->GetLeft() == NULL) && \
+        ((cur->GetRight() != NULL && cur->GetRight()->GetColor() == black) || cur->GetRight() == NULL)) {
         // color the node black
-        window_root->color = black;
+        window_root->SetColor(black);
       }
     }
-    else if (window_root->color == black && cur->color == red && sibling->color == red) {
-      window_root->color = black;
-      cur->color = black;
-      sibling->color = black;
+    else if (window_root->GetColor() == black && cur->GetColor() == red && sibling->GetColor() == red) {
+      window_root->SetColor(black);
+      cur->SetColor(black);
+      sibling->SetColor(black);
     }
     // 3-d and e, cur is red and has a red child
-    else if (window_root->color == black && cur->color == red && \
-      sibling->color == black && (cur->left->color == red \
-      || cur->right->color == red)) {
+    else if (window_root->GetColor() == black && cur->GetColor() == red && \
+      sibling->GetColor() == black && (cur->GetLeft()->GetColor() == red \
+      || cur->GetRight()->GetColor() == red)) {
       // re-color the tree, then rotate
-      cur->color = black;
+      cur->SetColor(black);
       if (direction == 0) {
         // 3e, left case
-        if (cur->right->color == red) {
+        if (cur->GetRight()->GetColor() == red) {
           rotateLeft(cur);
         }
         rotateRight(window_root);
-        std::cout << "rotating dir = 0 on key: " << window_root->key << " color: " << window_root->color << std::endl;
-        window_root->color = black;
-        window_root->right->color = red;
-        window_root->right->right->color = black;
-        window_root->left->color = red;
-        window_root->left->left->color = black;
-        window_root->left->right->color = black;
+        //std::cout << "rotating dir = 0 on key: " << window_root->key << " color: " << window_root->color << std::endl;
+        window_root->SetColor(black);
+        window_root->GetRight()->SetColor(red);
+        window_root->GetRight()->GetRight()->SetColor(black);
+        window_root->GetLeft()->SetColor(red);
+        window_root->GetLeft()->GetLeft()->SetColor(black);
+        window_root->GetLeft()->GetRight()->SetColor(black);
       }
       else {
         // 3e, right case
-        if (cur->left->color == red) {
+        if (cur->GetLeft()->GetColor() == red) {
           rotateRight(cur);
         }
         rotateLeft(window_root);
-        std::cout << "rotating dir = 1 on key: " << window_root->key << " color: " << window_root->color << std::endl;
-        window_root->color = black;
-        window_root->left->color = red;
-        window_root->left->left->color = black;
-        window_root->right->color = red;
-        window_root->right->left->color = black;
-        window_root->right->right->color = black;
+        //std::cout << "rotating dir = 1 on key: " << window_root->key << " color: " << window_root->color << std::endl;
+        window_root->SetColor(black);
+        window_root->GetLeft()->SetColor(red);
+        window_root->GetLeft()->GetLeft()->SetColor(black);
+        window_root->GetRight()->SetColor(red);
+        window_root->GetRight()->GetLeft()->SetColor(black);
+        window_root->GetRight()->GetRight()->SetColor(black);
       }
     }
   }
@@ -425,19 +450,19 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
 
 template <typename KeyType, typename ValueType>
 bool RBTree<KeyType, ValueType>::has_red_child_or_grandchild(treenode_t *cur) {
-  if (cur->left != NULL) {
-    if (cur->left->color == red) {
+  if (cur->GetLeft() != NULL) {
+    if (cur->GetLeft()->GetColor() == red) {
       return true;
     }
-    if (has_red_child(cur->left)) {
+    if (has_red_child(cur->GetLeft())) {
       return true;
     }
   }
-  if (cur->right != NULL) {
-    if (cur->right->color == red) {
+  if (cur->GetRight() != NULL) {
+    if (cur->GetRight()->GetColor() == red) {
       return true;
     }
-    if (has_red_child(cur->right)) {
+    if (has_red_child(cur->GetRight())) {
       return true;
     }
   }
@@ -447,10 +472,10 @@ bool RBTree<KeyType, ValueType>::has_red_child_or_grandchild(treenode_t *cur) {
 
 template <typename KeyType, typename ValueType>
 bool RBTree<KeyType, ValueType>::has_red_child(treenode_t *cur) {
-  if (cur->left != NULL && !cur->left->IsExternal() && cur->left->color == red) {
+  if (cur->GetLeft() != NULL && !cur->GetLeft()->IsExternal() && cur->GetLeft()->GetColor() == red) {
     return true;
   }
-  if (cur->right != NULL && !cur->right->IsExternal() && cur->right->color == red) {
+  if (cur->GetRight() != NULL && !cur->GetRight()->IsExternal() && cur->GetRight()->GetColor() == red) {
     return true;
   }
   return false;
@@ -665,8 +690,8 @@ void RBTree<KeyType, ValueType>::buildVector(treenode_t *root, int depth, \
         ret.push_back(std::vector<treenode_t *>());
     
     ret[depth].push_back(root);
-    if (root->left != NULL) buildVector(root->left, depth + 1, ret);
-    if (root->right != NULL) buildVector(root->right, depth + 1, ret);
+    if (root->GetLeft() != NULL) buildVector(root->GetLeft(), depth + 1, ret);
+    if (root->GetRight() != NULL) buildVector(root->GetRight(), depth + 1, ret);
 }
 
 template <typename KeyType, typename ValueType>
@@ -679,15 +704,15 @@ void RBTree<KeyType, ValueType>::print_tree() {
       treenode_t *cur = ret[level][node_i];
       n_nodes ++;
       std::string cl;
-      if (cur->color == black) {
+      if (cur->GetColor() == black) {
         cl = "black";
       }
       else {
         cl = "red";
       }
-      printf("(%d, %d, %s, %d). ", cur->key, cur->value, cl.c_str(), cur->IsExternal());
+      //printf("(%d, %d, %s, %d). ", cur->key, cur->value, cl.c_str(), cur->IsExternal());
     }
-    printf("\n");
+    //printf("\n");
   }
   printf("Depth = %lu\n", ret.size());
   printf("Number of Nodes = %d\n", n_nodes);
@@ -704,14 +729,14 @@ int RBTree<KeyType, ValueType>::computeBlackDepth(treenode_t *curNode) {
     if (curNode->IsExternal())
         return 1; 
     // Computes the height for the left and right child recursively
-    int leftHeight = computeBlackDepth(curNode->left);
-    int rightHeight = computeBlackDepth(curNode->right);
-    int add = (curNode->color == black) ? 1 : 0;
+    int leftHeight = computeBlackDepth(curNode->GetLeft());
+    int rightHeight = computeBlackDepth(curNode->GetRight());
+    int add = (curNode->GetColor() == black) ? 1 : 0;
     // The current subtree is not a red black tree if and only if
     // one or more of current node's children is a root of an invalid tree
     // or they contain different number of black nodes on a path to a null node.
     if (leftHeight == -1 || rightHeight == -1 || leftHeight != rightHeight) {
-        printf("The subtree rooted at key = %d is not a valid RB tree.\n", curNode->key);
+        printf("The subtree rooted at key = %d is not a valid RB tree.\n", curNode->GetKey());
         return -1; 
     }
     else {
@@ -725,7 +750,7 @@ bool RBTree<KeyType, ValueType>::checkCompleteness() {
     return true;
   }
 
-  if (root_ != NULL && root_->left == NULL && root_->right == NULL) {
+  if (root_ != NULL && root_->GetLeft() == NULL && root_->GetRight() == NULL) {
     return true;
   }
 
@@ -735,57 +760,56 @@ bool RBTree<KeyType, ValueType>::checkCompleteness() {
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::swapNodes(treenode_t *node1, treenode_t *node2) {
-  KeyType tmpKey = node1->key;
-  color_t tmpColor = node1->color;
-  treenode_t *tmpLeft = node1->left;
-  treenode_t *tmpRight = node1->right;
-  bool tmpIsExternal_ = node1->isExternal_;
-  ValueType tmpValue = node1->value;
+  KeyType tmpKey = node1->GetKey();
+  color_t tmpColor = node1->GetColor();
+  treenode_t *tmpLeft = node1->GetLeft();
+  treenode_t *tmpRight = node1->GetRight();
+  bool tmpIsExternal_ = node1->IsExternal();
+  ValueType tmpValue = node1->GetValue();
 
-  node1->key = node2->key;
-  node1->color = node2->color;
-  node1->left = node2->left;
-  node1->right = node2->right;
-  node1->isExternal_ = node2->isExternal_;
-  node1->value = node2->value;
+  node1->SetKey(node2->GetKey());
+  node1->SetColor(node2->GetColor());
+  node1->SetLeft(node2->GetLeft());
+  node1->SetRight(node2->GetRight());
+  node1->SetExternal(node2->IsExternal());
+  node1->SetValue(node2->GetValue());
 
-  node2->key = tmpKey;
-  node2->color = tmpColor;
-  node2->left = tmpLeft;
-  node2->right = tmpRight;
-  node2->isExternal_ = tmpIsExternal_;
-  node2->value = tmpValue;
+  node2->SetKey(tmpKey);
+  node2->SetColor(tmpColor);
+  node2->SetLeft(tmpLeft);
+  node2->SetRight(tmpRight);
+  node2->SetExternal(tmpIsExternal_);
+  node2->SetValue(tmpValue);
 }
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::rotateLeft(treenode_t *parent) {
 
-  treenode_t *tempRight = parent->right;
-  parent->right = parent;
+  treenode_t *tempRight = parent->GetRight();
+  parent->SetRight(parent);
   swapNodes(parent, tempRight);
 
   parent = tempRight;
   
-  treenode_t *newPar = parent->right;
-  treenode_t *temp = parent->right->left;
-  parent->right->left = parent;
-  parent->right = temp;
+  treenode_t *newPar = parent->GetRight();
+  treenode_t *temp = parent->GetRight()->GetLeft();
+  parent->GetRight()->SetLeft(parent);
+  parent->SetRight(temp);
 }
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::rotateRight(treenode_t *parent) {
 
-  treenode_t *tempLeft = parent->left;
-  parent->left = parent;
+  treenode_t *tempLeft = parent->GetLeft();
+  parent->SetLeft(parent);
   swapNodes(parent, tempLeft);
 
   parent = tempLeft;
 
-  treenode_t *temp = parent->left->right;
-  parent->left->right = parent;
-  parent->left = temp;
+  treenode_t *temp = parent->GetLeft()->GetRight();
+  parent->GetLeft()->SetRight(parent);
+  parent->SetLeft(temp);
 }
-
 }
 
 #endif

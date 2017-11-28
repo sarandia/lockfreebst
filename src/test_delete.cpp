@@ -12,10 +12,10 @@ int main() {
 
     cout << "Successfully created rb tree object" << endl;
     int insert_start = 1;
-    int insert_end = 10000;
+    int insert_end = 1000;
 
-    int delete_start = 1250;
-    int delete_end = 2250;
+    int delete_start = 50;
+    int delete_end = 100;
 
     set<int> insert_set;
     set<int> delete_set;
@@ -75,6 +75,6 @@ int main() {
             cout << "ERROR: Key " << *itr << " was deleted but found!!!" << endl;
         }
     }
-    //t->print_tree();
+    t->print_tree();
     return 0;
 }
