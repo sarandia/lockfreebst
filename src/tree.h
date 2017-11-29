@@ -9,6 +9,7 @@
 namespace lock_free_rbtree {
 
 enum color_t {red, black};
+enum pNode_flag_t {FREE, OWNED};
 
 template <typename KeyType, typename ValueType>
 class RBTree;
@@ -50,6 +51,23 @@ class TreeNode {
   TreeNode<KeyType, ValueType> * GetRight();
   void SetLeft(TreeNode<KeyType, ValueType> *new_left);
   void SetRight(TreeNode<KeyType, ValueType> *new_right);
+  pNode_flag_t GetFlag() {
+    int flag = (data & 0x01);
+    if (flag == 1) {
+      return OWNED;
+    }
+    else {
+      return FREE;
+    }
+  }
+  void SetFlag(pNode_flag_t new_flag) {
+    if (new_flag == OWNED) {
+      data |= 0x01;
+    }
+    else {
+      data &= ~(0x01);
+    }
+  }
 
   bool ReplaceChild(TreeNode<KeyType, ValueType> *oldchld, TreeNode<KeyType, ValueType> *newchld) {
     if (data->left == oldchld) {
@@ -64,7 +82,6 @@ class TreeNode {
   }
 
   private:
-    KeyType key;
     DataNode<KeyType, ValueType> *data;
 };
 
@@ -92,6 +109,7 @@ class DataNode {
     }
 
   private:
+    KeyType key;
     color_t color;
     TreeNode<KeyType, ValueType> *left;
     TreeNode<KeyType, ValueType> *right;
@@ -163,7 +181,7 @@ bool TreeNode<KeyType, ValueType>::IsComplete() {
 
 template <typename KeyType, typename ValueType>
 KeyType TreeNode<KeyType, ValueType>::GetKey() {
-  return key;
+  return data->key;
 };
 
 
@@ -191,7 +209,7 @@ void TreeNode<KeyType, ValueType>::SetExternal(bool new_isExt) {
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetKey(KeyType new_key) {
-  key = new_key;
+  data->key = new_key;
 }
 
 template <typename KeyType, typename ValueType>
