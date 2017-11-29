@@ -14,19 +14,25 @@ template <typename KeyType, typename ValueType>
 class RBTree;
 
 template <typename KeyType, typename ValueType>
+class TreeNode;
+
+template <typename KeyType, typename ValueType>
+class DataNode;
+
+template <typename KeyType, typename ValueType>
 class TreeNode {
   
   friend class RBTree<KeyType, ValueType>;
   
   public:
   TreeNode(bool ext) {
-    isExternal_ = ext;
-    left = NULL;
-    right = NULL;
-    value = -1;
-    if (ext) {
-      color = black;
-    }
+    data = new DataNode<KeyType, ValueType>(ext);
+  }
+
+  // copy constructor
+  TreeNode(TreeNode<KeyType, ValueType> *n) {
+    SetKey(n->GetKey());
+    data = new DataNode<KeyType, ValueType>(n->data);
   }
 
   bool IsExternal();
@@ -46,24 +52,51 @@ class TreeNode {
   void SetRight(TreeNode<KeyType, ValueType> *new_right);
 
   bool ReplaceChild(TreeNode<KeyType, ValueType> *oldchld, TreeNode<KeyType, ValueType> *newchld) {
-    if (left == oldchld) {
-      left = newchld;
+    if (data->left == oldchld) {
+      data->left = newchld;
       return true;
     }
-    if (right == oldchld) {
-      right = newchld;
+    if (data->right == oldchld) {
+      data->right = newchld;
       return true;
     }
     return false;
   }
 
   private:
-  KeyType key;
-  color_t color;
-  TreeNode *left;
-  TreeNode *right;
-  bool isExternal_;
-  ValueType value;
+    KeyType key;
+    DataNode<KeyType, ValueType> *data;
+};
+
+template <typename KeyType, typename ValueType>
+class DataNode {
+  friend class TreeNode<KeyType, ValueType>;
+
+  public:
+    DataNode(bool ext) {
+      isExternal_ = ext;
+      left = NULL;
+      right = NULL;
+      value = -1;
+      if (ext) {
+        color = black;
+      }
+    }
+
+    DataNode(DataNode<KeyType, ValueType> *n) {
+      isExternal_ = n->isExternal_;
+      left = n->left;
+      right = n->right;
+      value = n->value;
+      color = n->color;
+    }
+
+  private:
+    color_t color;
+    TreeNode<KeyType, ValueType> *left;
+    TreeNode<KeyType, ValueType> *right;
+    bool isExternal_;
+    ValueType value;
 };
 
 template <typename KeyType, typename ValueType>
@@ -86,6 +119,9 @@ class RBTree {
   bool checkCompleteness();
   treenode_t *GetRoot() {return root_;}
   bool checkBlackDepth();
+
+  // parallel algorithm helpers
+  RBTree<KeyType, ValueType> *copy_window(std::vector<treenode_t *> &v);
   
   private:
   treenode_t *root_;
@@ -98,26 +134,27 @@ class RBTree {
   void rotateRight(treenode_t *parent);
   void delete_tree(treenode_t *cur);
   int computeBlackDepth(treenode_t *curNode);
+
 };
 
 template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::IsExternal() {
-  return isExternal_;
+  return data->isExternal_;
 }
 
 template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::IsBlack() {
-  return color == black;
+  return data->color == black;
 }
 
 template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::IsComplete() {
-  if (left == NULL && right == NULL) {
+  if (data->left == NULL && data->right == NULL) {
     return true;
   }
 
-  if (left != NULL && right != NULL) {
-    return left->IsComplete() && right->IsComplete();
+  if (data->left != NULL && data->right != NULL) {
+    return data->left->IsComplete() && data->right->IsComplete();
   }
 
   return false;
@@ -131,24 +168,24 @@ KeyType TreeNode<KeyType, ValueType>::GetKey() {
 
 template <typename KeyType, typename ValueType>
 ValueType TreeNode<KeyType, ValueType>::GetValue() {
-  return value;
+  return data->value;
 };
 
 
 template <typename KeyType, typename ValueType>
 TreeNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::GetLeft() {
-  return left;
+  return data->left;
 };
 
 
 template <typename KeyType, typename ValueType>
 TreeNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::GetRight() {
-  return right;
+  return data->right;
 };
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetExternal(bool new_isExt) {
-  isExternal_ = new_isExt;
+  data->isExternal_ = new_isExt;
 }
 
 template <typename KeyType, typename ValueType>
@@ -158,27 +195,27 @@ void TreeNode<KeyType, ValueType>::SetKey(KeyType new_key) {
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetValue(ValueType new_value) {
-  value = new_value;
+  data->value = new_value;
 }
 
 template <typename KeyType, typename ValueType>
 color_t TreeNode<KeyType, ValueType>::GetColor() {
-  return color;
+  return data->color;
 }
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetColor(color_t new_color) {
-  color = new_color;
+  data->color = new_color;
 }
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetLeft(TreeNode<KeyType, ValueType> *new_left) {
-  left = new_left;
+  data->left = new_left;
 }
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetRight(TreeNode<KeyType, ValueType> *new_right) {
-  right = new_right;
+  data->right = new_right;
 }
 
 template <typename KeyType, typename ValueType>
@@ -810,6 +847,13 @@ void RBTree<KeyType, ValueType>::rotateRight(treenode_t *parent) {
   parent->GetLeft()->SetRight(parent);
   parent->SetLeft(temp);
 }
+
+template <typename KeyType, typename ValueType>
+RBTree<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vector<treenode_t *> &v) {
+  // copy all nodes that are connected to the access path
+  treenode_t *test = new treenode_t(root_);
+}
+
 }
 
 #endif
