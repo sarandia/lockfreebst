@@ -134,6 +134,7 @@ class RBTree {
   void rotateRight(treenode_t *parent);
   void delete_tree(treenode_t *cur);
   int computeBlackDepth(treenode_t *curNode);
+  TreeNode<KeyType, ValueType> *clone_subtree(treenode_t *n);
 
 };
 
@@ -850,8 +851,40 @@ void RBTree<KeyType, ValueType>::rotateRight(treenode_t *parent) {
 
 template <typename KeyType, typename ValueType>
 RBTree<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vector<treenode_t *> &v) {
+  if (v.size() == 0) return NULL;
   // copy all nodes that are connected to the access path
-  treenode_t *test = new treenode_t(root_);
+  treenode_t *dup_w_root = new treenode_t(v[0]);
+  treenode_t *prev_node = NULL;
+  treenode_t *cur_w_node = dup_w_root;
+  for (auto node: v) {
+    // if node is window root
+    if (prev_node == NULL) {
+      continue;
+    }
+    // if the access path goes left, copy the right subtree of prev
+    if (prev_node->GetLeft() == node) {
+      cur_w_node->SetRight(clone_subtree(prev_node->GetRight()));
+      treenode_t new_w_node = new treenode_t(node);
+      cur_w_node->SetLeft(new_w_node);
+      cur_w_node = new_w_node;
+    }
+    else {
+      cur_w_node->SetLeft(clone_subtree(prev_node->GetLeft()));
+      treenode_t new_w_node = new treenode_t(node);
+      cur_w_node->SetRight(new_w_node);
+      cur_w_node = new_w_node;
+    }
+  }
+}
+
+template <typename KeyType, typename ValueType>
+TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::clone_subtree(treenode_t *n) {
+  treenode_t *new_root;
+  if (n == NULL) return NULL;
+  new_root = new treenode_t(n);
+  new_root->SetLeft(copy_subtree(n->GetLeft()));
+  new_root->SetRight(copy_subtree(n->GetRight()));
+  return new_root;
 }
 
 }
