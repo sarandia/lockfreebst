@@ -194,8 +194,8 @@ RBTree<KeyType, ValueType>::~RBTree() {
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::delete_tree(treenode_t *cur) {
   if (cur == NULL) return;
-  delete_tree(cur->left);
-  delete_tree(cur->right);
+  delete_tree(cur->GetLeft());
+  delete_tree(cur->GetRight());
   delete cur;
 }
 
@@ -388,7 +388,7 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
     treenode_t *window_root = q[0];
     treenode_t *sibling;
     int direction = 0;
-    if (window_root->left == q[1]) {
+    if (window_root->GetLeft() == q[1]) {
       sibling = window_root->GetRight();
     }
     else {
@@ -597,7 +597,7 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
   }
 
   if (sibling == par->GetRight()) {
-    if (sibling->GetColor() == black && sibling->right->GetColor() == red) {
+    if (sibling->GetColor() == black && sibling->GetRight()->GetColor() == red) {
       sibling->SetColor(par->GetColor());
       sibling->GetRight()->SetColor(black);
       par->SetColor(black);
@@ -606,7 +606,7 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
     }
     if (sibling->GetColor() == black && sibling->GetLeft()->GetColor() == red) {
       sibling->GetLeft()->SetColor(par->GetColor());
-      par->color = black;
+      par->SetColor(black);
       rotateRight(sibling);
       rotateLeft(par);
       return;
@@ -620,7 +620,7 @@ void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
       return;
     }
     if (sibling->GetColor() == black && sibling->GetRight()->GetColor() == red) {
-      sibling->GetRight()->SetColor(par->color);
+      sibling->GetRight()->SetColor(par->GetColor());
       par->SetColor(black);
       rotateLeft(sibling);
       rotateRight(par);
