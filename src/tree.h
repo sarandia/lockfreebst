@@ -119,9 +119,6 @@ class RBTree {
   bool checkCompleteness();
   treenode_t *GetRoot() {return root_;}
   bool checkBlackDepth();
-
-  // parallel algorithm helpers
-  RBTree<KeyType, ValueType> *copy_window(std::vector<treenode_t *> &v);
   
   private:
   treenode_t *root_;
@@ -134,6 +131,9 @@ class RBTree {
   void rotateRight(treenode_t *parent);
   void delete_tree(treenode_t *cur);
   int computeBlackDepth(treenode_t *curNode);
+
+  // parallel algorithm helpers
+  RBTree<KeyType, ValueType> *copy_window(std::vector<treenode_t *> &v);
   TreeNode<KeyType, ValueType> *clone_subtree(treenode_t *n);
 
 };
@@ -369,15 +369,12 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     q.pop_back(); // pop off y
   }
   q.push_back(new_int);
-  //for (auto key:q) {
-  //  std::cout << key->key << ",";
-  //}
-  //std::cout << std::endl;
-  //q.pop_back();
-  //std::cout << "FIXING INSERT:..." << std::endl;
-  //print_tree();
-  //print2D(root_);
-  //std::cout << "------------------" << std::endl;
+  /*for (auto key:q) {
+    std::cout << key->key << ",";
+  }
+  std::cout << std::endl;
+  RBTree<KeyType, ValueType> *rbt = copy_window(q);
+  rbt->print_tree();*/
   fix_insert(q);
 }
 
@@ -748,7 +745,7 @@ void RBTree<KeyType, ValueType>::print_tree() {
       else {
         cl = "red";
       }
-      //printf("(%d, %d, %s, %d). ", cur->key, cur->value, cl.c_str(), cur->IsExternal());
+      //printf("(%d, %d, %s, %d). ", cur->GetKey(), cur->GetValue(), cl.c_str(), cur->IsExternal());
     }
     //printf("\n");
   }
@@ -864,17 +861,20 @@ RBTree<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vector<
     // if the access path goes left, copy the right subtree of prev
     if (prev_node->GetLeft() == node) {
       cur_w_node->SetRight(clone_subtree(prev_node->GetRight()));
-      treenode_t new_w_node = new treenode_t(node);
+      treenode_t *new_w_node = new treenode_t(node);
       cur_w_node->SetLeft(new_w_node);
       cur_w_node = new_w_node;
     }
     else {
       cur_w_node->SetLeft(clone_subtree(prev_node->GetLeft()));
-      treenode_t new_w_node = new treenode_t(node);
+      treenode_t *new_w_node = new treenode_t(node);
       cur_w_node->SetRight(new_w_node);
       cur_w_node = new_w_node;
     }
   }
+  RBTree<KeyType, ValueType> *rbt = new RBTree<KeyType, ValueType>();
+  rbt->root_ = dup_w_root;
+  return rbt;
 }
 
 template <typename KeyType, typename ValueType>
@@ -882,8 +882,8 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::clone_subtree(treenode
   treenode_t *new_root;
   if (n == NULL) return NULL;
   new_root = new treenode_t(n);
-  new_root->SetLeft(copy_subtree(n->GetLeft()));
-  new_root->SetRight(copy_subtree(n->GetRight()));
+  new_root->SetLeft(clone_subtree(n->GetLeft()));
+  new_root->SetRight(clone_subtree(n->GetRight()));
   return new_root;
 }
 
