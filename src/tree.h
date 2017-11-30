@@ -948,10 +948,7 @@ void TreeNode<KeyType, ValueType>::swap_window(RBTree<KeyType, ValueType> *rbt) 
   // TODO: need compare_and_swap here
   //data = rbt->GetRoot()->data;
   DataNode<KeyType, ValueType> *old_data = (DataNode<KeyType, ValueType> *) data;
-
-  while (!data.compare_exchange_strong(old_data, rbt->GetRoot()->data)) {
-    
-  }
+  while (!data.compare_exchange_weak(old_data, rbt->GetRoot()->data));
 }
 
 }
