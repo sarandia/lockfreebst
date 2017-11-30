@@ -5,6 +5,7 @@
 #include <vector>
 #include <iterator>
 #include <string>
+#include <atomic>
 
 namespace lock_free_rbtree {
 
@@ -32,8 +33,8 @@ class TreeNode {
 
   // copy constructor
   TreeNode(TreeNode<KeyType, ValueType> *n) {
-    SetKey(n->GetKey());
     data = new DataNode<KeyType, ValueType>(n->data);
+    SetKey(n->GetKey());
   }
 
   bool IsExternal();
@@ -70,19 +71,20 @@ class TreeNode {
   }
 
   bool ReplaceChild(TreeNode<KeyType, ValueType> *oldchld, TreeNode<KeyType, ValueType> *newchld) {
-    if (data->left == oldchld) {
-      data->left = newchld;
+    if (((DataNode<KeyType, ValueType> *) data)->left == oldchld) {
+      ((DataNode<KeyType, ValueType> *) data)->left = newchld;
       return true;
     }
-    if (data->right == oldchld) {
-      data->right = newchld;
+    if (((DataNode<KeyType, ValueType> *) data)->right == oldchld) {
+      ((DataNode<KeyType, ValueType> *) data)->right = newchld;
       return true;
     }
     return false;
   }
 
   private:
-    DataNode<KeyType, ValueType> *data;
+    std::atomic<DataNode<KeyType, ValueType> *> data;
+    void swap_window(RBTree<KeyType, ValueType> *rbt);
 };
 
 template <typename KeyType, typename ValueType>
@@ -151,29 +153,30 @@ class RBTree {
   int computeBlackDepth(treenode_t *curNode);
 
   // parallel algorithm helpers
-  RBTree<KeyType, ValueType> *copy_window(std::vector<treenode_t *> &v);
+  RBTree<KeyType, ValueType> *fix_window_color(std::vector<treenode_t *> &v, int insert_or_delete);
+  RBTree<KeyType, ValueType> *copy_window(std::vector<treenode_t *> &v, std::vector<treenode_t *> &new_acc_path);
   TreeNode<KeyType, ValueType> *clone_subtree(treenode_t *n);
 
 };
 
 template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::IsExternal() {
-  return data->isExternal_;
+  return ((DataNode<KeyType, ValueType> *) data)->isExternal_;
 }
 
 template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::IsBlack() {
-  return data->color == black;
+  return ((DataNode<KeyType, ValueType> *) data)->color == black;
 }
 
 template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::IsComplete() {
-  if (data->left == NULL && data->right == NULL) {
+  if (((DataNode<KeyType, ValueType> *) data)->left == NULL && ((DataNode<KeyType, ValueType> *) data)->right == NULL) {
     return true;
   }
 
-  if (data->left != NULL && data->right != NULL) {
-    return data->left->IsComplete() && data->right->IsComplete();
+  if (((DataNode<KeyType, ValueType> *) data)->left != NULL && ((DataNode<KeyType, ValueType> *) data)->right != NULL) {
+    return ((DataNode<KeyType, ValueType> *) data)->left->IsComplete() && ((DataNode<KeyType, ValueType> *) data)->right->IsComplete();
   }
 
   return false;
@@ -181,60 +184,60 @@ bool TreeNode<KeyType, ValueType>::IsComplete() {
 
 template <typename KeyType, typename ValueType>
 KeyType TreeNode<KeyType, ValueType>::GetKey() {
-  return data->key;
+  return ((DataNode<KeyType, ValueType> *) data)->key;
 };
 
 
 template <typename KeyType, typename ValueType>
 ValueType TreeNode<KeyType, ValueType>::GetValue() {
-  return data->value;
+  return ((DataNode<KeyType, ValueType> *) data)->value;
 };
 
 
 template <typename KeyType, typename ValueType>
 TreeNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::GetLeft() {
-  return data->left;
+  return ((DataNode<KeyType, ValueType> *) data)->left;
 };
 
 
 template <typename KeyType, typename ValueType>
 TreeNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::GetRight() {
-  return data->right;
+  return ((DataNode<KeyType, ValueType> *) data)->right;
 };
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetExternal(bool new_isExt) {
-  data->isExternal_ = new_isExt;
+  ((DataNode<KeyType, ValueType> *) data)->isExternal_ = new_isExt;
 }
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetKey(KeyType new_key) {
-  data->key = new_key;
+  ((DataNode<KeyType, ValueType> *) data)->key = new_key;
 }
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetValue(ValueType new_value) {
-  data->value = new_value;
+  ((DataNode<KeyType, ValueType> *) data)->value = new_value;
 }
 
 template <typename KeyType, typename ValueType>
 color_t TreeNode<KeyType, ValueType>::GetColor() {
-  return data->color;
+  return ((DataNode<KeyType, ValueType> *) data)->color;
 }
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetColor(color_t new_color) {
-  data->color = new_color;
+  ((DataNode<KeyType, ValueType> *) data)->color = new_color;
 }
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetLeft(TreeNode<KeyType, ValueType> *new_left) {
-  data->left = new_left;
+  ((DataNode<KeyType, ValueType> *) data)->left = new_left;
 }
 
 template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetRight(TreeNode<KeyType, ValueType> *new_right) {
-  data->right = new_right;
+  ((DataNode<KeyType, ValueType> *) data)->right = new_right;
 }
 
 template <typename KeyType, typename ValueType>
@@ -317,8 +320,10 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       z->SetColor(red);
       z->GetLeft()->SetColor(black);
       z->GetRight()->SetColor(black);
+      //printf("HERE!!! 4 BLACK!!!\n");
       // fix color problems
-      fix_insert(q);
+      //fix_insert(q);
+      q[0]->swap_window(fix_window_color(q, 0));
       // replace the current node x by the child of z along the access path
       if (key < z->GetKey()) {
         x = z->GetLeft();
@@ -387,13 +392,25 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     q.pop_back(); // pop off y
   }
   q.push_back(new_int);
-  /*for (auto key:q) {
-    std::cout << key->key << ",";
+
+  // for debugging
+  /*std::cout << "Access Path: ";
+  for (auto node:q) {
+    std::cout << node->GetKey() << ",";
   }
   std::cout << std::endl;
-  RBTree<KeyType, ValueType> *rbt = copy_window(q);
-  rbt->print_tree();*/
-  fix_insert(q);
+  std::vector<treenode_t *> v;
+  RBTree<KeyType, ValueType> *rbt = copy_window(q, v);
+  rbt->print_tree();
+  std::cout << "Copied Access Path: ";
+  for (auto node: v) {
+    std::cout << node->GetKey() << ",";
+  }
+  std::cout << std::endl;*/
+
+  //fix_insert(q);
+  q[0]->swap_window(fix_window_color(q, 0));
+
 }
 
 template <typename KeyType, typename ValueType>
@@ -865,15 +882,33 @@ void RBTree<KeyType, ValueType>::rotateRight(treenode_t *parent) {
 }
 
 template <typename KeyType, typename ValueType>
-RBTree<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vector<treenode_t *> &v) {
+RBTree<KeyType, ValueType> *RBTree<KeyType, ValueType>::fix_window_color(std::vector<treenode_t *> &v, int insert_or_delete) {
+  std::vector<treenode_t *> new_acc_path;
+  RBTree<KeyType, ValueType> *w_copy = copy_window(v, new_acc_path);
+  treenode_t *window_root = w_copy->GetRoot();
+  if (insert_or_delete == 0) {
+    fix_insert(new_acc_path);
+  }
+  else {
+    fix_delete(new_acc_path);
+  }
+  // return the data node of the root TreeNode for later swapping
+  return w_copy;
+}
+
+template <typename KeyType, typename ValueType>
+RBTree<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vector<treenode_t *> &v,\
+  std::vector<treenode_t *> &new_acc_path) {
   if (v.size() == 0) return NULL;
   // copy all nodes that are connected to the access path
   treenode_t *dup_w_root = new treenode_t(v[0]);
+  new_acc_path.push_back(dup_w_root);
   treenode_t *prev_node = NULL;
   treenode_t *cur_w_node = dup_w_root;
   for (auto node: v) {
     // if node is window root
     if (prev_node == NULL) {
+      prev_node = node;
       continue;
     }
     // if the access path goes left, copy the right subtree of prev
@@ -881,14 +916,17 @@ RBTree<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vector<
       cur_w_node->SetRight(clone_subtree(prev_node->GetRight()));
       treenode_t *new_w_node = new treenode_t(node);
       cur_w_node->SetLeft(new_w_node);
+      new_acc_path.push_back(new_w_node);
       cur_w_node = new_w_node;
     }
     else {
       cur_w_node->SetLeft(clone_subtree(prev_node->GetLeft()));
       treenode_t *new_w_node = new treenode_t(node);
       cur_w_node->SetRight(new_w_node);
+      new_acc_path.push_back(new_w_node);
       cur_w_node = new_w_node;
     }
+    prev_node = node;
   }
   RBTree<KeyType, ValueType> *rbt = new RBTree<KeyType, ValueType>();
   rbt->root_ = dup_w_root;
@@ -903,6 +941,17 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::clone_subtree(treenode
   new_root->SetLeft(clone_subtree(n->GetLeft()));
   new_root->SetRight(clone_subtree(n->GetRight()));
   return new_root;
+}
+
+template <typename KeyType, typename ValueType>
+void TreeNode<KeyType, ValueType>::swap_window(RBTree<KeyType, ValueType> *rbt) {
+  // TODO: need compare_and_swap here
+  //data = rbt->GetRoot()->data;
+  DataNode<KeyType, ValueType> *old_data = (DataNode<KeyType, ValueType> *) data;
+
+  while (!data.compare_exchange_strong(old_data, rbt->GetRoot()->data)) {
+    
+  }
 }
 
 }
