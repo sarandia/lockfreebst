@@ -62,6 +62,8 @@ int main() {
         cout << "Removed " << *itr << endl;
         //cout << "***********************************************************" << endl;
     }
+    t->checkBlackDepth();
+    
     for (auto itr = remain_set.begin(); itr != remain_set.end(); itr++) {
         TreeNode<int, int> *found = t->Search(*itr);
         if (found == NULL) {
