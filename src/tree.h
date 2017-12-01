@@ -10,7 +10,8 @@
 namespace lock_free_rbtree {
 
 enum color_t {red, black};
-enum pNode_flag_t {FREE, OWNED};
+enum own_t {FREE, OWNED};
+enum operation_t {INSERT, DELETE, NOP};
 
 template <typename KeyType, typename ValueType>
 class RBTree;
@@ -52,7 +53,7 @@ class TreeNode {
   TreeNode<KeyType, ValueType> * GetRight();
   void SetLeft(TreeNode<KeyType, ValueType> *new_left);
   void SetRight(TreeNode<KeyType, ValueType> *new_right);
-  pNode_flag_t GetFlag() {
+  own_t GetFlag() {
     int flag = (data & 0x01);
     if (flag == 1) {
       return OWNED;
@@ -61,7 +62,7 @@ class TreeNode {
       return FREE;
     }
   }
-  void SetFlag(pNode_flag_t new_flag) {
+  void SetFlag(own_t new_flag) {
     if (new_flag == OWNED) {
       data |= 0x01;
     }
@@ -117,6 +118,7 @@ class DataNode {
     TreeNode<KeyType, ValueType> *right;
     bool isExternal_;
     ValueType value;
+    operation_t op = NOP;
 };
 
 template <typename KeyType, typename ValueType>
