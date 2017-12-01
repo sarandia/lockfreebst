@@ -84,7 +84,7 @@ class TreeNode {
 
   private:
     std::atomic<DataNode<KeyType, ValueType> *> data;
-    void swap_window(RBTree<KeyType, ValueType> *rbt);
+    void swap_window(TreeNode<KeyType, ValueType> *rbt);
 };
 
 template <typename KeyType, typename ValueType>
@@ -153,8 +153,8 @@ class RBTree {
   int computeBlackDepth(treenode_t *curNode);
 
   // parallel algorithm helpers
-  RBTree<KeyType, ValueType> *fix_window_color(std::vector<treenode_t *> &v, int insert_or_delete);
-  RBTree<KeyType, ValueType> *copy_window(std::vector<treenode_t *> &v, std::vector<treenode_t *> &new_acc_path);
+  TreeNode<KeyType, ValueType> *fix_window_color(std::vector<treenode_t *> &v, int insert_or_delete);
+  TreeNode<KeyType, ValueType> *copy_window(std::vector<treenode_t *> &v, std::vector<treenode_t *> &new_acc_path);
   TreeNode<KeyType, ValueType> *clone_subtree(treenode_t *n);
 
 };
@@ -729,7 +729,23 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 
 		if (curNode->IsExternal()) {
 			v.push_back(curNode);
-			fix_delete(v);
+			//fix_delete(v);
+      /*std::cout << "Access Path: ";
+      for (auto node:v) {
+        std::cout << node->GetKey() << ",";
+      }
+      std::cout << std::endl;
+      std::vector<treenode_t *> v2;
+      TreeNode<KeyType, ValueType> *rbt = copy_window(v, v2);
+      RBTree<KeyType, ValueType> *rbt2 = new RBTree<KeyType, ValueType>();
+      rbt2->root_ = rbt;
+      rbt2->print_tree();
+      std::cout << "Copied Access Path: ";
+      for (auto node: v2) {
+        std::cout << node->GetKey() << ",";
+      } 
+      std::cout << std::endl;*/
+      v[0]->swap_window(fix_window_color(v, 1));
 			return;
 		}
 		else {
@@ -740,7 +756,10 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 				par->GetRight()->SetColor(red);
 				par->GetLeft()->SetColor(red);
 
-				fix_delete(v);
+				//fix_delete(v);
+        treenode_t *old_win_root = v[0];
+        old_win_root->swap_window(fix_window_color(v, 1));
+        par = *(v.rbegin());
 				v.clear();
 				v.push_back(par);
 
@@ -903,22 +922,23 @@ void RBTree<KeyType, ValueType>::rotateRight(treenode_t *parent) {
 }
 
 template <typename KeyType, typename ValueType>
-RBTree<KeyType, ValueType> *RBTree<KeyType, ValueType>::fix_window_color(std::vector<treenode_t *> &v, int insert_or_delete) {
+TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::fix_window_color(std::vector<treenode_t *> &v, int insert_or_delete) {
   std::vector<treenode_t *> new_acc_path;
-  RBTree<KeyType, ValueType> *w_copy = copy_window(v, new_acc_path);
-  treenode_t *window_root = w_copy->GetRoot();
+  TreeNode<KeyType, ValueType> *w_copy = copy_window(v, new_acc_path);
+  //treenode_t *window_root = w_copy->GetRoot();
   if (insert_or_delete == 0) {
     fix_insert(new_acc_path);
   }
   else {
     fix_delete(new_acc_path);
+    v = new_acc_path;
   }
   // return the data node of the root TreeNode for later swapping
   return w_copy;
 }
 
 template <typename KeyType, typename ValueType>
-RBTree<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vector<treenode_t *> &v,\
+TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vector<treenode_t *> &v,\
   std::vector<treenode_t *> &new_acc_path) {
   if (v.size() == 0) return NULL;
   // copy all nodes that are connected to the access path
@@ -949,9 +969,9 @@ RBTree<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vector<
     }
     prev_node = node;
   }
-  RBTree<KeyType, ValueType> *rbt = new RBTree<KeyType, ValueType>();
-  rbt->root_ = dup_w_root;
-  return rbt;
+  //RBTree<KeyType, ValueType> *rbt = new RBTree<KeyType, ValueType>();
+  //rbt->root_ = dup_w_root;
+  return dup_w_root;
 }
 
 template <typename KeyType, typename ValueType>
@@ -965,11 +985,11 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::clone_subtree(treenode
 }
 
 template <typename KeyType, typename ValueType>
-void TreeNode<KeyType, ValueType>::swap_window(RBTree<KeyType, ValueType> *rbt) {
+void TreeNode<KeyType, ValueType>::swap_window(TreeNode<KeyType, ValueType> *rbt) {
   // TODO: need compare_and_swap here
   //data = rbt->GetRoot()->data;
   DataNode<KeyType, ValueType> *old_data = (DataNode<KeyType, ValueType> *) data;
-  while (!data.compare_exchange_weak(old_data, rbt->GetRoot()->data));
+  while (!data.compare_exchange_weak(old_data, rbt->data));
 }
 
 }
