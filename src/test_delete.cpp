@@ -12,10 +12,10 @@ int main() {
 
     cout << "Successfully created rb tree object" << endl;
     int insert_start = 1;
-    int insert_end = 1000;
+    int insert_end = 10;
 
-    int delete_start = 50;
-    int delete_end = 100;
+    int delete_start = 2;
+    int delete_end = 3;
 
     set<int> insert_set;
     set<int> delete_set;
@@ -51,7 +51,7 @@ int main() {
     }
 
     //t->print_tree();
-    //print2D(t->GetRoot());
+    print2D(t->GetRoot());
 
     cout << "***********************************************************" << endl;
 
@@ -60,8 +60,11 @@ int main() {
         //t->print_tree();
 
         cout << "Removed " << *itr << endl;
-        //cout << "***********************************************************" << endl;
+        cout << "***********************************************************" << endl;
+        print2D(t->GetRoot());
     }
+    //t->checkBlackDepth();
+
     for (auto itr = remain_set.begin(); itr != remain_set.end(); itr++) {
         TreeNode<int, int> *found = t->Search(*itr);
         if (found == NULL) {

@@ -840,6 +840,13 @@ int RBTree<KeyType, ValueType>::computeBlackDepth(treenode_t *curNode) {
     // For an empty subtree the answer is obvious
     if (curNode->IsExternal())
         return 1; 
+
+    if (curNode->GetColor() == red) {
+      if (curNode->GetLeft()->GetColor() == red || curNode->GetRight()->GetColor() == red) {
+        printf("Double red found %d\n", curNode->GetKey());
+        return -1; 
+      }
+    }
     // Computes the height for the left and right child recursively
     int leftHeight = computeBlackDepth(curNode->GetLeft());
     int rightHeight = computeBlackDepth(curNode->GetRight());
