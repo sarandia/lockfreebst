@@ -553,203 +553,224 @@ bool RBTree<KeyType, ValueType>::has_red_child(treenode_t *cur) {
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::fix_delete(std::vector<treenode_t *> &v) {
-  auto r_itr = v.rbegin();
+	auto r_itr = v.rbegin();
 
-  treenode_t *cur = NULL;
-  treenode_t *par = NULL;
-  treenode_t *sibling = NULL;
+	treenode_t *cur = NULL;
+	treenode_t *par = NULL;
+	treenode_t *sibling = NULL;
 
-  cur = *r_itr;
+	cur = *r_itr;
 
-  r_itr++;
-  if (r_itr != v.rend()) {
-    par = *r_itr;
-  } else {
-    root_ = NULL;
-    delete cur;
-    return;
-  }
+	r_itr++;
+	if (r_itr != v.rend()) {
+		par = *r_itr;
+	}
+	else {
+		root_ = NULL;
+		delete cur;
+		return;
+	}
 
-  if (par->GetLeft() == cur) {
-    sibling = par->GetRight();
-  } else {
-    sibling = par->GetLeft();
-  }
+	if (par->GetLeft() == cur) {
+		sibling = par->GetRight();
+	}
+	else {
+		sibling = par->GetLeft();
+	}
 
-  if (cur->IsExternal()) {
+	if (cur->IsExternal()) {
 
-    swapNodes(par, sibling);
+		swapNodes(par, sibling);
 
-    if (sibling->GetColor() == red) {
-      delete cur;
-      delete sibling;
-      return;
-    }
+		if (sibling->GetColor() == red) {
+			delete cur;
+			delete sibling;
+			return;
+		}
 
-    delete cur;
-    delete sibling;
+		delete cur;
+		delete sibling;
 
-    cur = par;
+		cur = par;
 
-    r_itr++;
-    if (r_itr != v.rend()) {
-      par = *r_itr;
-    } else {
-      if (!cur->IsExternal()) {
-        if (cur->GetColor() == red) {
-          cur->SetColor(black);
-        }
-      }
-      return;
-    }
+		r_itr++;
+		if (r_itr != v.rend()) {
+			par = *r_itr;
+		}
+		else {
+			if (!cur->IsExternal()) {
+				if (cur->GetColor() == red) {
+					cur->SetColor(black);
+				}
+			}
+			return;
+		}
 
-    if (par->GetLeft() == cur) {
-      sibling = par->GetRight();
-    } else {
-      sibling = par->GetLeft();
-    }
-  }
+		if (par->GetLeft() == cur) {
+			sibling = par->GetRight();
+		}
+		else {
+			sibling = par->GetLeft();
+		}
+	}
 
-  while (true) {
+	if (cur->GetColor() == red) {
+		cur->SetColor(black);
+		return;
+	}
 
-    if (par->GetColor() == black && sibling->GetColor() == black && !has_red_child(sibling)) {
+	while (true) {
 
-      sibling->SetColor(red);
+		if (par->GetColor() == black && sibling->GetColor() == black && !has_red_child(sibling)) {
 
-      cur = par;
+			sibling->SetColor(red);
 
-      r_itr++;
-      if (r_itr != v.rend()) {
-        par = *r_itr;
-      } else {
-        if (!cur->IsExternal()) {
-          if (cur->GetColor() == red) {
-            cur->SetColor(black);
-          }
-        }
-        return;
-      }
+			cur = par;
 
-      if (par->GetLeft() == cur) {
-        sibling = par->GetRight();
-      } else {
-        sibling = par->GetLeft();
-      }
-    } else {
-      break;
-    }
-  }
+			if (cur->GetColor() == red) {
+				cur->SetColor(black);
+				return;
+			}
 
-  if (cur->GetColor() == black && par->GetColor() == black && sibling->GetColor() == red) {
-    par->SetColor(red);
-    sibling->SetColor(black);
-    if (sibling == par->GetRight()) {
-      rotateLeft(par);
+			r_itr++;
+			if (r_itr != v.rend()) {
+				par = *r_itr;
+			}
+			else {
+				if (!cur->IsExternal()) {
+					if (cur->GetColor() == red) {
+						cur->SetColor(black);
+					}
+				}
+				return;
+			}
 
-      par = par->GetLeft();
+			if (par->GetLeft() == cur) {
+				sibling = par->GetRight();
+			}
+			else {
+				sibling = par->GetLeft();
+			}
+		}
+		else {
+			break;
+		}
+	}
 
-      cur = par->GetLeft();
-      sibling = par->GetRight();
-    } else {
-      rotateRight(par);
+	if (cur->GetColor() == black && par->GetColor() == black && sibling->GetColor() == red) {
+		par->SetColor(red);
+		sibling->SetColor(black);
+		if (sibling == par->GetRight()) {
+			rotateLeft(par);
 
-      par = par->GetRight();
+			par = par->GetLeft();
 
-      cur = par->GetRight();
-      sibling = par->GetLeft();
-    }
-  }
+			cur = par->GetLeft();
+			sibling = par->GetRight();
+		}
+		else {
+			rotateRight(par);
 
-  if (par->GetColor() == red && sibling->GetColor() == black && !has_red_child(sibling)) {
-    par->SetColor(black);
-    sibling->SetColor(red);
-    return;
-  }
+			par = par->GetRight();
 
-  if (sibling == par->GetRight()) {
-    if (sibling->GetColor() == black && sibling->GetRight()->GetColor() == red) {
-      sibling->SetColor(par->GetColor());
-      sibling->GetRight()->SetColor(black);
-      par->SetColor(black);
-      rotateLeft(par);
-      return;
-    }
-    if (sibling->GetColor() == black && sibling->GetLeft()->GetColor() == red) {
-      sibling->GetLeft()->SetColor(par->GetColor());
-      par->SetColor(black);
-      rotateRight(sibling);
-      rotateLeft(par);
-      return;
-    }
-  } else {
-    if (sibling->GetColor() == black && sibling->GetRight()->GetColor() == red) {
-      sibling->SetColor(par->GetColor());
-      sibling->GetLeft()->SetColor(black);
-      par->SetColor(black);
-      rotateRight(par);
-      return;
-    }
-    if (sibling->GetColor() == black && sibling->GetRight()->GetColor() == red) {
-      sibling->GetRight()->SetColor(par->GetColor());
-      par->SetColor(black);
-      rotateLeft(sibling);
-      rotateRight(par);
-      return;
-    }
-  }
+			cur = par->GetRight();
+			sibling = par->GetLeft();
+		}
+	}
+
+	if (par->GetColor() == red && sibling->GetColor() == black && !has_red_child(sibling)) {
+		par->SetColor(black);
+		sibling->SetColor(red);
+		return;
+	}
+
+	if (sibling == par->GetRight()) {
+		if (sibling->GetColor() == black && sibling->GetRight()->GetColor() == red) {
+			sibling->SetColor(par->GetColor());
+			sibling->GetRight()->SetColor(black);
+			par->SetColor(black);
+			rotateLeft(par);
+			return;
+		}
+		if (sibling->GetColor() == black && sibling->GetLeft()->GetColor() == red) {
+			sibling->GetLeft()->SetColor(par->GetColor());
+			par->SetColor(black);
+			rotateRight(sibling);
+			rotateLeft(par);
+			return;
+		}
+	}
+	else {
+		if (sibling->GetColor() == black && sibling->GetLeft()->GetColor() == red) {
+			sibling->SetColor(par->GetColor());
+			sibling->GetLeft()->SetColor(black);
+			par->SetColor(black);
+			rotateRight(par);
+			return;
+		}
+		if (sibling->GetColor() == black && sibling->GetRight()->GetColor() == red) {
+			sibling->GetRight()->SetColor(par->GetColor());
+			par->SetColor(black);
+			rotateLeft(sibling);
+			rotateRight(par);
+			return;
+		}
+	}
 }
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::Remove(KeyType key) {
-  std::vector<treenode_t *> v;
+	std::vector<treenode_t *> v;
 
-  treenode_t *curNode = root_;
-  int black_count = 0;
+	treenode_t *curNode = root_;
+	int black_count = 0;
 
-  while (true) {
+	while (true) {
 
-    if (curNode->IsExternal()) {
-      v.push_back(curNode);
-      fix_delete(v);
-      return;
-    } else {
-      if (curNode->GetColor() != black || has_red_child_or_grandchild(curNode)) {
-        if (!v.empty()) {
-          treenode_t *tempNode = NULL;
-          tempNode = v.back();
-          v.clear();
-          v.push_back(tempNode);
-        }
-        
-        black_count = 0;
-      } else {
-        black_count++;
-      }
+		if (curNode->IsExternal()) {
+			v.push_back(curNode);
+			fix_delete(v);
+			return;
+		}
+		else {
 
-      if (black_count == 3) {
-        treenode_t *par = *(v.rbegin());
-        if (curNode == par->GetLeft()) {
-          par->GetRight()->SetColor(red);
-        } else {
-          par->GetLeft()->SetColor(red);
-        }
+			if (black_count == 2) {
+				treenode_t *par = *(v.rbegin());
 
-        fix_delete(v);
-        v.clear();
-        v.push_back(par);
+				par->GetRight()->SetColor(red);
+				par->GetLeft()->SetColor(red);
 
-        black_count = 0;
-      }
+				fix_delete(v);
+				v.clear();
+				v.push_back(par);
 
-      v.push_back(curNode);
-      
-      if (key <= curNode->GetKey()) {
-        curNode = curNode->GetLeft();
-      } else {
-        curNode = curNode->GetRight();
-      }
-    }
-  }
+				black_count = 0;
+			}
+
+			if (curNode->GetColor() != black || has_red_child_or_grandchild(curNode)) {
+				if (!v.empty()) {
+					treenode_t *tempNode = NULL;
+					tempNode = v.back();
+					v.clear();
+					v.push_back(tempNode);
+				}
+
+				black_count = 0;
+			}
+			else {
+				black_count++;
+			}
+
+			v.push_back(curNode);
+
+			if (key <= curNode->GetKey()) {
+				curNode = curNode->GetLeft();
+			}
+			else {
+				curNode = curNode->GetRight();
+			}
+		}
+	}
 }
 
 template <typename KeyType, typename ValueType>
