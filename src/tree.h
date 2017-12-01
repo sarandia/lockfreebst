@@ -747,7 +747,8 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
         std::cout << node->GetKey() << ",";
       } 
       std::cout << std::endl;*/
-      v[0]->swap_window(fix_window_color(v, 1));
+      treenode_t *old_win_root = v[0];
+      old_win_root->swap_window(fix_window_color(v, 1));
 			return;
 		}
 		else {
