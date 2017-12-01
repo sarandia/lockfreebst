@@ -14,14 +14,6 @@ enum own_t {FREE, OWNED};
 enum op_t {INSERT, DELETE, NOP};
 
 template <typename KeyType, typename ValueType>
-
-struct Operation {
-  op_t operation;
-  KeyType key;
-  ValueType Value;
-};
-
-template <typename KeyType, typename ValueType>
 class RBTree;
 
 template <typename KeyType, typename ValueType>
@@ -29,6 +21,14 @@ class TreeNode;
 
 template <typename KeyType, typename ValueType>
 class DataNode;
+
+template <typename KeyType, typename ValueType>
+struct Operation {
+  op_t operation;
+  KeyType key;
+  ValueType Value;
+  std::vector<TreeNode<KeyType, ValueType> *> v;
+};
 
 template <typename KeyType, typename ValueType>
 class TreeNode {
@@ -65,22 +65,13 @@ class TreeNode {
   TreeNode<KeyType, ValueType> * GetRight();
   void SetLeft(TreeNode<KeyType, ValueType> *new_left);
   void SetRight(TreeNode<KeyType, ValueType> *new_right);
-  own_t GetFlag() {
-    int flag = (data & 0x01);
-    if (flag == 1) {
-      return OWNED;
-    }
-    else {
-      return FREE;
-    }
+
+  DataNode<KeyType, ValueType> *GetData() {
+    DataNode<KeyType, ValueType> *data_ptr = data;
+    return data_ptr;
   }
-  void SetFlag(own_t new_flag) {
-    if (new_flag == OWNED) {
-      data |= 0x01;
-    }
-    else {
-      data &= ~(0x01);
-    }
+  void SetData(DataNode<KeyType, ValueType> *new_data) {
+    data = new_data;
   }
 
   bool ReplaceChild(TreeNode<KeyType, ValueType> *oldchld, TreeNode<KeyType, ValueType> *newchld) {
@@ -256,6 +247,17 @@ template <typename KeyType, typename ValueType>
 void TreeNode<KeyType, ValueType>::SetRight(TreeNode<KeyType, ValueType> *new_right) {
   ((DataNode<KeyType, ValueType> *) data)->right = new_right;
 }
+
+template <typename KeyType, typename ValueType>
+Operation<KeyType, ValueType> *TreeNode<KeyType, ValueType>::GetOp() {
+  return ((DataNode<KeyType, ValueType> *) data)->op;
+}
+
+template <typename KeyType, typename ValueType>
+void TreeNode<KeyType, ValueType>::SetOp(operation_t *op) {
+  ((DataNode<KeyType, ValueType> *) data)->op = op;
+}
+
 
 template <typename KeyType, typename ValueType>
 RBTree<KeyType, ValueType>::RBTree() {
@@ -901,7 +903,7 @@ void RBTree<KeyType, ValueType>::swapNodes(treenode_t *node1, treenode_t *node2)
   treenode_t *tmpRight = node1->GetRight();
   bool tmpIsExternal_ = node1->IsExternal();
   ValueType tmpValue = node1->GetValue();
-  own_t tmpOwn = node1->GetFlag();
+  //auto tmpOwn = node1->GetData();
   operation_t *tmpOp = node1->GetOp();
 
   node1->SetKey(node2->GetKey());
@@ -910,7 +912,7 @@ void RBTree<KeyType, ValueType>::swapNodes(treenode_t *node1, treenode_t *node2)
   node1->SetRight(node2->GetRight());
   node1->SetExternal(node2->IsExternal());
   node1->SetValue(node2->GetValue());
-  node1->SetFlag(node2->GetFlag());
+  //node1->SetData(node2->GetData());
   node1->SetOp(node2->GetOp());
 
   node2->SetKey(tmpKey);
@@ -919,7 +921,7 @@ void RBTree<KeyType, ValueType>::swapNodes(treenode_t *node1, treenode_t *node2)
   node2->SetRight(tmpRight);
   node2->SetExternal(tmpIsExternal_);
   node2->SetValue(tmpValue);
-  node2->SetFlag(tmpOwn);
+  //node2->SetData(tmpOwn);
   node2->SetOp(tmpOp);
 }
 
@@ -1023,7 +1025,10 @@ void TreeNode<KeyType, ValueType>::swap_window(TreeNode<KeyType, ValueType> *rbt
   // TODO: need compare_and_swap here
   //data = rbt->GetRoot()->data;
   DataNode<KeyType, ValueType> *old_data = (DataNode<KeyType, ValueType> *) data;
-  while (!data.compare_exchange_weak(old_data, rbt->data));
+  bool cas = data.compare_exchange_weak(old_data, rbt->data);
+  if (!cas) {
+    printf("CAS FAILED\n");
+  }
 }
 
 }
