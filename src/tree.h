@@ -157,7 +157,7 @@ class RBTree {
   // parallel algorithm helpers
   TreeNode<KeyType, ValueType> *fix_window_color(std::vector<treenode_t *> &v, int insert_or_delete);
   TreeNode<KeyType, ValueType> *copy_window(std::vector<treenode_t *> &v, std::vector<treenode_t *> &new_acc_path);
-  TreeNode<KeyType, ValueType> *clone_subtree(treenode_t *n);
+  TreeNode<KeyType, ValueType> *clone_subtree(treenode_t *n, int depth);
 
 };
 
@@ -964,14 +964,14 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vecto
     }
     // if the access path goes left, copy the right subtree of prev
     if (prev_node->GetLeft() == node) {
-      cur_w_node->SetRight(clone_subtree(prev_node->GetRight()));
+      cur_w_node->SetRight(clone_subtree(prev_node->GetRight(), 0));
       treenode_t *new_w_node = new treenode_t(node);
       cur_w_node->SetLeft(new_w_node);
       new_acc_path.push_back(new_w_node);
       cur_w_node = new_w_node;
     }
     else {
-      cur_w_node->SetLeft(clone_subtree(prev_node->GetLeft()));
+      cur_w_node->SetLeft(clone_subtree(prev_node->GetLeft(), 0));
       treenode_t *new_w_node = new treenode_t(node);
       cur_w_node->SetRight(new_w_node);
       new_acc_path.push_back(new_w_node);
@@ -985,12 +985,15 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vecto
 }
 
 template <typename KeyType, typename ValueType>
-TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::clone_subtree(treenode_t *n) {
+TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::clone_subtree(treenode_t *n, int depth) {
+  //std::cout << depth << std::endl;
   treenode_t *new_root;
   if (n == NULL) return NULL;
   new_root = new treenode_t(n);
-  new_root->SetLeft(clone_subtree(n->GetLeft()));
-  new_root->SetRight(clone_subtree(n->GetRight()));
+  if (depth < 3) {
+    new_root->SetLeft(clone_subtree(n->GetLeft(), depth+1));
+    new_root->SetRight(clone_subtree(n->GetRight(), depth+1));
+  }
   return new_root;
 }
 
