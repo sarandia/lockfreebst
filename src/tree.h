@@ -11,7 +11,15 @@ namespace lock_free_rbtree {
 
 enum color_t {red, black};
 enum own_t {FREE, OWNED};
-enum operation_t {INSERT, DELETE, NOP};
+enum op_t {INSERT, DELETE, NOP};
+
+template <typename KeyType, typename ValueType>
+
+struct Operation {
+  op_t operation;
+  KeyType key;
+  ValueType Value;
+};
 
 template <typename KeyType, typename ValueType>
 class RBTree;
@@ -28,6 +36,8 @@ class TreeNode {
   friend class RBTree<KeyType, ValueType>;
   
   public:
+  typedef Operation<KeyType, ValueType> operation_t;
+  
   TreeNode(bool ext) {
     data = new DataNode<KeyType, ValueType>(ext);
   }
@@ -49,6 +59,8 @@ class TreeNode {
   void SetValue(ValueType new_value);
   color_t GetColor();
   void SetColor(color_t new_color);
+  operation_t *GetOp();
+  void SetOp(operation_t *op);
   TreeNode<KeyType, ValueType> * GetLeft();
   TreeNode<KeyType, ValueType> * GetRight();
   void SetLeft(TreeNode<KeyType, ValueType> *new_left);
@@ -93,6 +105,8 @@ class DataNode {
   friend class TreeNode<KeyType, ValueType>;
 
   public:
+    typedef Operation<KeyType, ValueType> operation_t;
+    
     DataNode(bool ext) {
       isExternal_ = ext;
       left = NULL;
@@ -118,7 +132,7 @@ class DataNode {
     TreeNode<KeyType, ValueType> *right;
     bool isExternal_;
     ValueType value;
-    operation_t op = NOP;
+    operation_t *op = NULL;
 };
 
 template <typename KeyType, typename ValueType>
@@ -129,7 +143,8 @@ class RBTree {
   ~RBTree();
   
   typedef TreeNode<KeyType, ValueType> treenode_t;
-
+  typedef Operation<KeyType, ValueType> operation_t;
+  
   treenode_t * Search(KeyType key);
   
   void Insert(KeyType key, ValueType value);
