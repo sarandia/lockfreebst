@@ -106,7 +106,7 @@ class DataNode {
 
   public:
     typedef Operation<KeyType, ValueType> operation_t;
-    
+
     DataNode(bool ext) {
       isExternal_ = ext;
       left = NULL;
@@ -901,6 +901,8 @@ void RBTree<KeyType, ValueType>::swapNodes(treenode_t *node1, treenode_t *node2)
   treenode_t *tmpRight = node1->GetRight();
   bool tmpIsExternal_ = node1->IsExternal();
   ValueType tmpValue = node1->GetValue();
+  own_t tmpOwn = node1->GetFlag();
+  operation_t *tmpOp = node1->GetOp();
 
   node1->SetKey(node2->GetKey());
   node1->SetColor(node2->GetColor());
@@ -908,6 +910,8 @@ void RBTree<KeyType, ValueType>::swapNodes(treenode_t *node1, treenode_t *node2)
   node1->SetRight(node2->GetRight());
   node1->SetExternal(node2->IsExternal());
   node1->SetValue(node2->GetValue());
+  node1->SetFlag(node2->GetFlag());
+  node1->SetOp(node2->GetOp());
 
   node2->SetKey(tmpKey);
   node2->SetColor(tmpColor);
@@ -915,6 +919,8 @@ void RBTree<KeyType, ValueType>::swapNodes(treenode_t *node1, treenode_t *node2)
   node2->SetRight(tmpRight);
   node2->SetExternal(tmpIsExternal_);
   node2->SetValue(tmpValue);
+  node2->SetFlag(tmpOwn);
+  node2->SetOp(tmpOp);
 }
 
 template <typename KeyType, typename ValueType>
