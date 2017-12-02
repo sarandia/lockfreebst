@@ -303,10 +303,11 @@ template <typename KeyType, typename ValueType>
 TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType value, bool need_own) {
 
   DataNode<KeyType, ValueType> *old_data;
+  TreeNode<KeyType, ValueType> *ret;
+  
   if (need_own) {
     DataNode<KeyType, ValueType> *new_data;
     old_data = acquireOwnership(op, key, value, &new_data);
-    TreeNode<KeyType, ValueType> *ret;
     ret = new TreeNode<KeyType, ValueType>(new_data);
 
     while (old_data->own == OWNED) {
