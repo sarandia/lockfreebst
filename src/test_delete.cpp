@@ -12,10 +12,10 @@ int main() {
 
     cout << "Successfully created rb tree object" << endl;
     int insert_start = 1;
-    int insert_end = 5;
+    int insert_end = 2;
 
-    int delete_start = 2;
-    int delete_end = 3;
+    int delete_start = 1;
+    int delete_end = 1;
 
     set<int> insert_set;
     set<int> delete_set;
@@ -36,7 +36,7 @@ int main() {
     for (auto itr = insert_set.begin(); itr != insert_set.end(); itr++) {
         t->Insert(*itr, *itr);
         //t->print_tree();
-        //cout << "Inserted " << *itr << endl;
+        cout << "Inserted " << *itr << endl;
     }
 
     if (!t->checkCompleteness()) {

@@ -14,8 +14,8 @@ int insert_end1 = 3;
 int delete_start1 = 1;
 int delete_end1 = 1;
 
-int insert_start2 = 5;
-int insert_end2 = 7;
+int insert_start2 = -3;
+int insert_end2 = -1;
 
 int delete_start2 = 3;
 int delete_end2 = 3;
@@ -83,7 +83,7 @@ void *threadfunc2(void *tid) {
 }
 
 int main() {
-    //t->Insert(1000000, 1000000);
+    t->Insert(0, 0);
 
     set<int> remain_set;
     set<int> delete_set;
