@@ -329,113 +329,54 @@ template <typename KeyType, typename ValueType>
 TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType value, bool need_own) {
   //printf("stuck in Takeover()\n");
 	DataNode<KeyType, ValueType> *old_data;
-	TreeNode<KeyType, ValueType> *ret = new TreeNode<KeyType, ValueType>(static_cast<DataNode<KeyType, ValueType>*>(NULL));
 
 	if (need_own) {
 		DataNode<KeyType, ValueType> *new_data;
-		old_data = acquireOwnership(op, key, value, &new_data);
-		ret->SetData(new_data);
 
-		while (old_data->own == OWNED) {
-			op_t help_op = old_data->op->operation;
-			KeyType help_key = old_data->op->key;
-			ValueType help_value = old_data->op->value;
-      //printf("Helping node key = %d, operation = %d\n", help_key, help_op);
 
-			ret->SetData(new DataNode<KeyType, ValueType>(old_data));
+		while (!acquireOwnership(op, key, value, &new_data)) {
 
-			if (ret->GetOp() != NULL) {
-				delete ret->GetOp();
-				ret->SetOp(NULL);
-				ret->SetOwn(FREE);
-			}
-
-			RBTree<KeyType, ValueType> help_rbt(ret, true);
-
-			if (help_op == INSERT) {
-        help_rbt.Insert(help_key, help_value);
-			}
-			else if (help_op == DELETE) {
-        help_rbt.Remove(help_key);
-			}
-			this->swap_window(help_rbt.GetRoot(), old_data);
-			old_data = acquireOwnership(op, key, value, &new_data);
-
-			ret->SetData(new_data);
-		}
-		return ret;
+    }
+    
+		return NULL;
 	}
 	else {
-		old_data = this->data;
-
-		if (old_data->own == OWNED) {
-			op_t help_op = old_data->op->operation;
-			KeyType help_key = old_data->op->key;
-			ValueType help_value = old_data->op->value;
-
-			ret->SetData(new DataNode<KeyType, ValueType>(old_data));
-
-			if (ret->GetOp() != NULL) {
-				delete ret->GetOp();
-				ret->SetOp(NULL);
-				ret->SetOwn(FREE);
-			}
-
-			RBTree<KeyType, ValueType> help_rbt(ret, true);
-
-			if (help_op == INSERT) {
-        help_rbt.Insert(help_key, help_value);
-			}
-			else if (help_op == DELETE) {
-        help_rbt.Remove(help_key);
-			}
-			this->swap_window(help_rbt.GetRoot(), old_data);
-		}
+		while (this->GetOwn() != FREE) {
+      
+    }
+          
 		return NULL;
 	}
 }
 
 template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::releaseOwnership(DataNode<KeyType, ValueType> *old_data) {
-  DataNode<KeyType, ValueType> *new_data = new DataNode<KeyType, ValueType>(old_data);
-  new_data->own = FREE;
-  if (new_data->op != NULL) {
-    delete new_data->op;
-    new_data->op = NULL;
-  }
-
-  return this->swap_data(new_data, old_data);
+  this->data->own = FREE;
+  return truel
 }
 
 template <typename KeyType, typename ValueType>
 DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op_t op, KeyType key, ValueType value,
   DataNode<KeyType, ValueType> **new_data_node) {
   DataNode<KeyType, ValueType> *old_data = this->data;
-  DataNode<KeyType, ValueType> *new_data;
+
 
   bool isSuccess = false;
 
-  while (old_data->own != OWNED) {
+  while (true) {
 
-    new_data = new DataNode<KeyType, ValueType>(old_data);
-    new_data->own = OWNED;
-    new_data->op = new operation_t();
-    new_data->op->key = key;
-    new_data->op->operation = op;
-    new_data->op->value = value;
-
-    if (this->swap_data(new_data, old_data)) {
-      isSuccess = true;
-      break;
+    if (old_data->own != OWNED) {
+  
+      if (this->swap_data(OWNED, old_data)) {
+        isSuccess = true;
+        break;
+      }
     }
-
-    delete new_data;
 
     old_data = this->data;
   }
-  if (isSuccess) {
-    *new_data_node = new_data;
-  }
+
+  *new_data_node = old_data;
   return old_data;
 }
 
