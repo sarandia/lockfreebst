@@ -894,9 +894,9 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 		if (curNode->IsExternal()) {
       if (v.empty()) {
         recordedWinRoot = curNode;
-        curNode = curNode->Takeover(DELETE, key, static_cast<T>(NULL), true);
+        curNode = curNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), true);
       } else {
-        curNode->Takeover(DELETE, key, static_cast<T>(NULL), false);
+        curNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), false);
       }
 			v.push_back(curNode);
 			//fix_delete(v);
@@ -935,7 +935,7 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
         par = *(v.rbegin());
         recordedWinRoot = par;
         v.clear();
-        par = par->Takeover(DELETE, key, static_cast<T>(NULL), true);
+        par = par->Takeover(DELETE, key, static_cast<ValueType>(NULL), true);
 				v.push_back(par);
 
 				black_count = 0;
@@ -952,7 +952,7 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 
           v.clear();
 
-          tempNode = tempNode->Takeover(DELETE, key, static_cast<T>(NULL), true);
+          tempNode = tempNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), true);
 					v.push_back(tempNode);
 				}
 
@@ -964,9 +964,9 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
       
       if (v.empty()) {
         recordedWinRoot = curNode;
-        curNode = curNode->Takeover(DELETE, key, static_cast<T>(NULL), true);
+        curNode = curNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), true);
       } else {
-        curNode->Takeover(DELETE, key, static_cast<T>(NULL), false);
+        curNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), false);
       }
 			v.push_back(curNode);
 
