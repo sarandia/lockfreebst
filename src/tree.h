@@ -894,9 +894,9 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 		if (curNode->IsExternal()) {
       if (v.empty()) {
         recordedWinRoot = curNode;
-        curNode = curNode->Takeover(DELETE, key, value, true);
+        curNode = curNode->Takeover(DELETE, key, NULL, true);
       } else {
-        curNode->Takeover(DELETE, key, value, false);
+        curNode->Takeover(DELETE, key, NULL, false);
       }
 			v.push_back(curNode);
 			//fix_delete(v);
@@ -935,7 +935,7 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
         par = *(v.rbegin());
         recordedWinRoot = par;
         v.clear();
-        par = par->Takeover(DELETE, key, value, true);
+        par = par->Takeover(DELETE, key, NULL, true);
 				v.push_back(par);
 
 				black_count = 0;
@@ -952,7 +952,7 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 
           v.clear();
 
-          tempNode = tempNode->Takeover(DELETE, key, value, true);
+          tempNode = tempNode->Takeover(DELETE, key, NULL, true);
 					v.push_back(tempNode);
 				}
 
@@ -964,9 +964,9 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
       
       if (v.empty()) {
         recordedWinRoot = curNode;
-        curNode = curNode->Takeover(DELETE, key, value, true);
+        curNode = curNode->Takeover(DELETE, key, NULL, true);
       } else {
-        curNode->Takeover(DELETE, key, value, false);
+        curNode->Takeover(DELETE, key, NULL, false);
       }
 			v.push_back(curNode);
 
