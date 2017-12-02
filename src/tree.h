@@ -466,11 +466,12 @@ template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   if (root_ == NULL) {
     root_ = new treenode_t(true);
-    DataNode<KeyType ,ValueType> *new_data = NULL;
-    root_->acquireOwnership(INSERT, key, value, &new_data);
+    treenode_t *dup_w_root = NULL;
+    dup_w_root = root_->Takeover(INSERT, key, value, true);
     root_->SetColor(black);
     root_->SetKey(key);
     root_->SetValue(value);
+    root_->releaseOwnership(dup_w_root->data);
     return;
   }
   // 1. make the top-down invariant true initially
