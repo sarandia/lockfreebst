@@ -856,6 +856,11 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 	while (true) {
 
 		if (curNode->IsExternal()) {
+      if (v.empty()) {
+        curNode->Takeover(DELETE, key, value, true);
+      } else {
+        curNode->Takeover(DELETE, key, value, false);
+      }
 			v.push_back(curNode);
 			//fix_delete(v);
       /*std::cout << "Access Path: ";
@@ -890,8 +895,10 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
         treenode_t *old_win_root = v[0];
         DataNode<KeyType, ValueType> *old_data = v[0]->data;
         old_win_root->swap_window(fix_window_color(v, 1), old_data);
+
         par = *(v.rbegin());
-				v.clear();
+        v.clear();
+        par->Takeover(DELETE, key, value, true);
 				v.push_back(par);
 
 				black_count = 0;
@@ -901,7 +908,9 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 				if (!v.empty()) {
 					treenode_t *tempNode = NULL;
 					tempNode = v.back();
-					v.clear();
+          v.clear();
+
+          tempNode->Takeover(DELETE, key, value, true);
 					v.push_back(tempNode);
 				}
 
@@ -911,6 +920,11 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 				black_count++;
 			}
 
+      if (v.empty()) {
+        curNode->Takeover(DELETE, key, value, true);
+      } else {
+        curNode->Takeover(DELETE, key, value, false);
+      }
 			v.push_back(curNode);
 
 			if (key <= curNode->GetKey()) {
