@@ -355,6 +355,7 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
 			else if (help_op == DELETE) {
 				help_rbt.Remove(help_key);
 			}
+      std::cout << "swap_window 1" << std::endl;
 			this->swap_window(help_rbt.GetRoot(), old_data);
 			old_data = acquireOwnership(op, key, value, &new_data);
 
@@ -386,6 +387,7 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
 			else if (help_op == DELETE) {
 				help_rbt.Remove(help_key);
 			}
+      std::cout << "swap_window 2" << std::endl;
 			this->swap_window(help_rbt.GetRoot(), old_data);
 		}
 		return NULL;
@@ -546,6 +548,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       // fix color problems
       //fix_insert(q);
       DataNode<KeyType, ValueType> *old_data = q[0]->data;
+      std::cout << "swap_window 3" << std::endl;
       x->swap_window(fix_window_color(q, 0), old_data);
       // replace the current node x by the child of z along the access path
       if (key < z->GetKey()) {
@@ -617,7 +620,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     q.push_back(y);
   }
   if (q.size() == 1 && q.back()->IsExternal()) {
-    q.pop_back(); // pop off y
+    q.clear(); // pop off y
   }
   q.push_back(new_int);
 
@@ -638,6 +641,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
 
   //fix_insert(q);
   DataNode<KeyType, ValueType> *old_data = q[0]->GetData();
+  std::cout << "swap_window 4" << std::endl;
   x->swap_window(fix_window_color(q, 0), old_data);
 }
 
@@ -1209,11 +1213,12 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vecto
   if (v.size() == 0) return NULL;
   // copy all nodes that are connected to the access path
   treenode_t *dup_w_root = new treenode_t(v[0]);
-  dup_w_root->SetOwn(FREE);
+  /*dup_w_root->SetOwn(FREE);
   if (dup_w_root->GetOp() != NULL) {
     delete dup_w_root->GetOp();
   }
-  dup_w_root->SetOp(NULL);
+  dup_w_root->SetOp(NULL);*/
+  dup_w_root->Takeover(NOP, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
   new_acc_path.push_back(dup_w_root);
   treenode_t *prev_node = NULL;
   treenode_t *cur_w_node = dup_w_root;
