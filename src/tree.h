@@ -338,14 +338,14 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
 
     }
     
-		return NULL;
+		return this;
 	}
 	else {
 		while (this->GetOwn() != FREE) {
       
     }
           
-		return NULL;
+		return this;
 	}
 }
 
