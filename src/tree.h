@@ -94,11 +94,11 @@ class TreeNode {
     return false;
   }
 
-
-  bool acquireOwnership(op_t op, KeyType key, ValueType value);
+  DataNode<KeyType, ValueType> * acquireOwnership(op_t op, KeyType key, ValueType value);
 
   private:
     std::atomic<DataNode<KeyType, ValueType> *> data;
+    bool swap_data(DataNode<KeyType, ValueType> *new_data, DataNode<KeyType, ValueType> *old_data);
     bool swap_window(TreeNode<KeyType, ValueType> *rbt, DataNode<KeyType, ValueType> *old_data);
 };
 
@@ -278,6 +278,16 @@ void TreeNode<KeyType, ValueType>::SetOp(operation_t *op) {
   ((DataNode<KeyType, ValueType> *) data)->op = op;
 }
 
+template <typename KeyType, typename ValueType>
+DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op_t op, KeyType key, ValueType value) {
+  DataNode<KeyType, ValueType> *old_data = this->data;
+
+  while (old_data->own != OWNED) {
+    this->swap_window()
+  }
+
+  return old_data;
+}
 
 template <typename KeyType, typename ValueType>
 RBTree<KeyType, ValueType>::RBTree() {
@@ -1057,6 +1067,14 @@ bool TreeNode<KeyType, ValueType>::swap_window(TreeNode<KeyType, ValueType> *rbt
   // TODO: need compare_and_swap here
   //data = rbt->GetRoot()->data;
   return data.compare_exchange_strong(old_data, rbt->data);
+}
+
+template <typename KeyType, typename ValueType>
+bool TreeNode<KeyType, ValueType>::swap_data(DataNode<KeyType, ValueType> *new_data, \
+  DataNode<KeyType, ValueType> *old_data) {
+  // TODO: need compare_and_swap here
+  //data = rbt->GetRoot()->data;
+  return data.compare_exchange_strong(old_data, new_data);
 }
 
 }
