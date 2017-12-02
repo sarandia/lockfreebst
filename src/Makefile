@@ -4,6 +4,8 @@ debug: print_tree.cpp tree.h
 	g++ -O0 -ggdb -std=c++11 treeprinter.cpp print_tree.cpp -o rbtree
 test: test_delete.cpp tree.h treeprinter.cpp treeprinter.h
 	g++ -O0 -ggdb -std=c++11 treeprinter.cpp test_delete.cpp -o test
+ptest: ptest.cpp tree.h treeprinter.cpp treeprinter.h
+	g++ -O0 -ggdb -std=c++11 treeprinter.cpp ptest.cpp -o ptest
 clean:
 	rm rbtree
 	rm test

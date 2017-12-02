@@ -12,10 +12,10 @@ int main() {
 
     cout << "Successfully created rb tree object" << endl;
     int insert_start = 1;
-    int insert_end = 10;
+    int insert_end = 10000;
 
-    int delete_start = 2;
-    int delete_end = 3;
+    int delete_start = 2000;
+    int delete_end = 3000;
 
     set<int> insert_set;
     set<int> delete_set;
