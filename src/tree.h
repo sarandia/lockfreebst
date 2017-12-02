@@ -129,6 +129,12 @@ class DataNode {
       op = n->op;
     }
 
+    ~DataNode() {
+      if (op != NULL) {
+        delete op;
+      }
+    }
+
   private:
     KeyType key;
     color_t color;
@@ -281,9 +287,27 @@ void TreeNode<KeyType, ValueType>::SetOp(operation_t *op) {
 template <typename KeyType, typename ValueType>
 DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op_t op, KeyType key, ValueType value) {
   DataNode<KeyType, ValueType> *old_data = this->data;
+  DataNode<KeyType, ValueType> *new_data = new DataNode<KeyType, ValueType>(this->data);
+  new_data->own = OWNED;
+  new_data->op = new operation_t();
+  new_data->op->key = key;
+  new_data->op->operation = op;
+  new_data->op->value = value;
+
+  bool isSuccess = false;
 
   while (old_data->own != OWNED) {
-    this->swap_window()
+
+    if (this->swap_data(old_data, new_data)) {
+      isSuccess = true;
+      break;
+    }
+
+    old_data = this->data;
+  }
+
+  if (!isSuccess) {
+    delete new_data;
   }
 
   return old_data;
