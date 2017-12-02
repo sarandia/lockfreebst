@@ -94,6 +94,9 @@ class TreeNode {
     return false;
   }
 
+
+  bool acquireOwnership(op_t op, KeyType key, ValueType value);
+
   private:
     std::atomic<DataNode<KeyType, ValueType> *> data;
     bool swap_window(TreeNode<KeyType, ValueType> *rbt, DataNode<KeyType, ValueType> *old_data);
