@@ -287,16 +287,18 @@ void TreeNode<KeyType, ValueType>::SetOp(operation_t *op) {
 template <typename KeyType, typename ValueType>
 DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op_t op, KeyType key, ValueType value) {
   DataNode<KeyType, ValueType> *old_data = this->data;
-  DataNode<KeyType, ValueType> *new_data = new DataNode<KeyType, ValueType>(old_data);
-  new_data->own = OWNED;
-  new_data->op = new operation_t();
-  new_data->op->key = key;
-  new_data->op->operation = op;
-  new_data->op->value = value;
+  DataNode<KeyType, ValueType> *new_data;
 
   bool isSuccess = false;
 
   while (old_data->own != OWNED) {
+
+    new_data = new DataNode<KeyType, ValueType>(old_data);
+    new_data->own = OWNED;
+    new_data->op = new operation_t();
+    new_data->op->key = key;
+    new_data->op->operation = op;
+    new_data->op->value = value;
 
     if (this->swap_data(old_data, new_data)) {
       isSuccess = true;
@@ -306,13 +308,6 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
     delete new_data;
 
     old_data = this->data;
-    new_data = new DataNode<KeyType, ValueType>(old_data);
-
-    new_data->own = OWNED;
-    new_data->op = new operation_t();
-    new_data->op->key = key;
-    new_data->op->operation = op;
-    new_data->op->value = value;
   }
 
   if (!isSuccess) {
