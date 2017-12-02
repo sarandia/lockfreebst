@@ -456,13 +456,11 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   int successiveBlk = 0;
   while (!y->IsExternal()) {
     // check if y is owned. if so, we perform Takeover()
-    if (!(isSubTree && y==x)) {
-      if (y == x) {
-        y->Takeover(INSERT, key, value, true);
-      }
-      else {
-        y->Takeover(INSERT, key, value, false);
-      }
+    if (y == x) {
+      y->Takeover(INSERT, key, value, true);
+    }
+    else {
+      y->Takeover(INSERT, key, value, false);
     }
     //printf("stuck in insert(), y->key = %d, y->own = %d\n", y->GetKey(), y->GetOwn());
     //printf("y->address = %p, isSubtree = %d\n", y, isSubTree);
