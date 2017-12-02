@@ -141,11 +141,14 @@ template <typename KeyType, typename ValueType>
 class RBTree {
   
   public:
-	RBTree();
-  ~RBTree();
-  
+      
   typedef TreeNode<KeyType, ValueType> treenode_t;
   typedef Operation<KeyType, ValueType> operation_t;
+
+  RBTree();
+  RBTree(treenode_t *root, bool subTree);
+  ~RBTree();
+
   
   treenode_t * Search(KeyType key);
   
@@ -170,12 +173,12 @@ class RBTree {
   void rotateRight(treenode_t *parent);
   void delete_tree(treenode_t *cur);
   int computeBlackDepth(treenode_t *curNode);
+  bool isSubTree;
 
   // parallel algorithm helpers
   TreeNode<KeyType, ValueType> *fix_window_color(std::vector<treenode_t *> &v, int insert_or_delete);
   TreeNode<KeyType, ValueType> *copy_window(std::vector<treenode_t *> &v, std::vector<treenode_t *> &new_acc_path);
   TreeNode<KeyType, ValueType> *clone_subtree(treenode_t *n, int depth);
-
 };
 
 template <typename KeyType, typename ValueType>
@@ -276,6 +279,13 @@ void TreeNode<KeyType, ValueType>::SetOp(operation_t *op) {
 template <typename KeyType, typename ValueType>
 RBTree<KeyType, ValueType>::RBTree() {
   root_ = NULL;
+  isSubTree = false;
+}
+
+template <typename KeyType, typename ValueType>
+RBTree<KeyType, ValueType>::RBTree(treenode_t *root, bool subTree) {
+  root_ = root;
+  isSubTree = subTree;
 }
 
 template <typename KeyType, typename ValueType>
