@@ -93,7 +93,7 @@ int main() {
         cout << "Inserted " << *itr << endl;
     }
 
-    print2D(t->GetRoot());
+    //print2D(t->GetRoot());
 
     pthread_t t1, t2;
     pthread_create(&t1, NULL, threadfunc1, (void *) NULL);
@@ -103,7 +103,7 @@ int main() {
 	pthread_join(t1, &status);
     pthread_join(t2, &status);
     
-    print2D(t->GetRoot());
+    //print2D(t->GetRoot());
 
     t->checkBlackDepth();
 
