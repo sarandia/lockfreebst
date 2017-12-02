@@ -327,7 +327,7 @@ void TreeNode<KeyType, ValueType>::SetOp(operation_t *op) {
 
 template <typename KeyType, typename ValueType>
 TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType value, bool need_own) {
-  //printf("stuck in Takeover()\n");
+  printf("stuck in Takeover()\n");
 	DataNode<KeyType, ValueType> *old_data;
 
 	if (need_own) {
@@ -335,14 +335,14 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
 
 
 		while (!acquireOwnership(op, key, value, &new_data)) {
-
+      printf("stuck in Takeover()->while loop\n");
     }
     
 		return this;
 	}
 	else {
 		while (this->GetOwn() != FREE) {
-      
+      printf("stuck in Takeover()->while loop\n");
     }
           
 		return this;
@@ -364,7 +364,7 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
   bool isSuccess = false;
 
   while (true) {
-
+    printf("stuck in acquireOwnership()\n");
     if (old_data->own != OWNED) {
   
       int temp = OWNED;
@@ -435,12 +435,14 @@ template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   if (root_ == NULL) {
     root_ = new treenode_t(true);
-    treenode_t *dup_w_root = NULL;
-    dup_w_root = root_->Takeover(INSERT, key, value, true);
+    printf("acquire root node\n");
+    root_->Takeover(INSERT, key, value, true);
+    printf("root node acquired\n");
     root_->SetColor(black);
     root_->SetKey(key);
     root_->SetValue(value);
-    root_->releaseOwnership(dup_w_root->data);
+    printf("release root node\n");
+    root_->releaseOwnership(NULL);
     return;
   }
   // 1. make the top-down invariant true initially
@@ -459,13 +461,13 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     // check if y is owned. if so, we perform Takeover()
     if (!(isSubTree && y==x)) {
       if (y == x) {
-        y = y->Takeover(INSERT, key, value, true);
+        y->Takeover(INSERT, key, value, true);
       }
       else {
         y->Takeover(INSERT, key, value, false);
       }
     }
-    //printf("stuck in insert(), y->key = %d, y->own = %d\n", y->GetKey(), y->GetOwn());
+    printf("stuck in insert(), y->key = %d, y->own = %d\n", y->GetKey(), y->GetOwn());
     //printf("y->address = %p, isSubtree = %d\n", y, isSubTree);
     // check if node is black with 2 red chilren
     q.push_back(y);
@@ -490,9 +492,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       z->GetLeft()->SetColor(black);
       z->GetRight()->SetColor(black);
       // fix color problems
-      //fix_insert(q);
-      DataNode<KeyType, ValueType> *old_data = q[0]->data;
-      x->swap_window(fix_window_color(q, 0), old_data);
+      fix_insert(q);
       // replace the current node x by the child of z along the access path
       if (key < z->GetKey()) {
         x->releaseOwnership(q[0]->data);
@@ -582,9 +582,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   }
   std::cout << std::endl;*/
 
-  //fix_insert(q);
-  DataNode<KeyType, ValueType> *old_data = q[0]->GetData();
-  x->swap_window(fix_window_color(q, 0), old_data);
+  fix_insert(q);
 }
 
 template <typename KeyType, typename ValueType>
