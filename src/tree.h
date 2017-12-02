@@ -637,7 +637,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   std::cout << std::endl;*/
 
   //fix_insert(q);
-  DataNode<KeyType, ValueType> *old_data = q[0]->data;
+  DataNode<KeyType, ValueType> *old_data = q[0]->GetData();
   x->swap_window(fix_window_color(q, 0), old_data);
 }
 
@@ -1227,11 +1227,7 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vecto
     if (prev_node->GetLeft() == node) {
       cur_w_node->SetRight(clone_subtree(prev_node->GetRight(), 0));
       treenode_t *new_w_node = new treenode_t(node);
-      new_w_node->SetOwn(FREE);
-      if (new_w_node->GetOp() != NULL) {
-        delete new_w_node->GetOp();
-      }
-      new_w_node->SetOp(NULL);
+      new_w_node->Takeover(NOP, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
       cur_w_node->SetLeft(new_w_node);
       new_acc_path.push_back(new_w_node);
       cur_w_node = new_w_node;
@@ -1239,11 +1235,7 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vecto
     else {
       cur_w_node->SetLeft(clone_subtree(prev_node->GetLeft(), 0));
       treenode_t *new_w_node = new treenode_t(node);
-      new_w_node->SetOwn(FREE);
-      if (new_w_node->GetOp() != NULL) {
-        delete new_w_node->GetOp();
-      }
-      new_w_node->SetOp(NULL);
+      new_w_node->Takeover(NOP, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
       cur_w_node->SetRight(new_w_node);
       new_acc_path.push_back(new_w_node);
       cur_w_node = new_w_node;
@@ -1261,11 +1253,7 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::clone_subtree(treenode
   treenode_t *new_root;
   if (n == NULL) return NULL;
   new_root = new treenode_t(n);
-  new_root->SetOwn(FREE);
-  if (new_root->GetOp() != NULL) {
-    delete new_root->GetOp();
-  }
-  new_root->SetOp(NULL);
+  new_root->Takeover(NOP, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
   if (depth < 3) {
     new_root->SetLeft(clone_subtree(n->GetLeft(), depth+1));
     new_root->SetRight(clone_subtree(n->GetRight(), depth+1));
@@ -1278,9 +1266,11 @@ bool TreeNode<KeyType, ValueType>::swap_window(TreeNode<KeyType, ValueType> *rbt
   DataNode<KeyType, ValueType> *old_data) {
   // TODO: need compare_and_swap here
   //data = rbt->GetRoot()->data;
-  bool res = data.compare_exchange_strong(old_data, rbt->data);
+  bool res = data.compare_exchange_strong(old_data, rbt->GetData());
   if (!res) {
     std::cout << "Swap window failed: old: " << old_data->ToString() << " new: " << rbt->GetData()->ToString() << std::endl;
+    std::cout << "data = " << data << " old_data = " << old_data << std::endl;
+    //std::cout << "target data: " << data->ToString() << std::endl;
   }
   return res;
 }
