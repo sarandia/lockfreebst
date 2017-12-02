@@ -88,7 +88,7 @@ class TreeNode {
 
   private:
     std::atomic<DataNode<KeyType, ValueType> *> data;
-    void swap_window(TreeNode<KeyType, ValueType> *rbt);
+    void swap_window(TreeNode<KeyType, ValueType> *rbt, DataNode<KeyType, ValueType> *old_data);
 };
 
 template <typename KeyType, typename ValueType>
@@ -345,7 +345,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       //printf("HERE!!! 4 BLACK!!!\n");
       // fix color problems
       //fix_insert(q);
-      q[0]->swap_window(fix_window_color(q, 0));
+      DataNode<KeyType, ValueType> *old_data = q[0]->data;
+      q[0]->swap_window(fix_window_color(q, 0), old_data);
       // replace the current node x by the child of z along the access path
       if (key < z->GetKey()) {
         x = z->GetLeft();
@@ -431,7 +432,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   std::cout << std::endl;*/
 
   //fix_insert(q);
-  q[0]->swap_window(fix_window_color(q, 0));
+  DataNode<KeyType, ValueType> *old_data = q[0]->data;
+  q[0]->swap_window(fix_window_color(q, 0), old_data);
 
 }
 
@@ -768,7 +770,8 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
       } 
       std::cout << std::endl;*/
       treenode_t *old_win_root = v[0];
-      old_win_root->swap_window(fix_window_color(v, 1));
+      DataNode<KeyType, ValueType> *old_data = v[0]->data;
+      old_win_root->swap_window(fix_window_color(v, 1), old_data);
 			return;
 		}
 		else {
@@ -781,7 +784,8 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 
 				//fix_delete(v);
         treenode_t *old_win_root = v[0];
-        old_win_root->swap_window(fix_window_color(v, 1));
+        DataNode<KeyType, ValueType> *old_data = v[0]->data;
+        old_win_root->swap_window(fix_window_color(v, 1), old_data);
         par = *(v.rbegin());
 				v.clear();
 				v.push_back(par);
@@ -1024,11 +1028,11 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::clone_subtree(treenode
 }
 
 template <typename KeyType, typename ValueType>
-void TreeNode<KeyType, ValueType>::swap_window(TreeNode<KeyType, ValueType> *rbt) {
+void TreeNode<KeyType, ValueType>::swap_window(TreeNode<KeyType, ValueType> *rbt, \
+  DataNode<KeyType, ValueType> *old_data) {
   // TODO: need compare_and_swap here
   //data = rbt->GetRoot()->data;
-  DataNode<KeyType, ValueType> *old_data = (DataNode<KeyType, ValueType> *) data;
-  bool cas = data.compare_exchange_weak(old_data, rbt->data);
+  bool cas = data.compare_exchange_strong(old_data, rbt->data);
   if (!cas) {
     printf("CAS FAILED\n");
   }
