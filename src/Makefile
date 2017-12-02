@@ -6,6 +6,10 @@ test: test_delete.cpp tree.h treeprinter.cpp treeprinter.h
 	g++ -O0 -ggdb -std=c++11 treeprinter.cpp test_delete.cpp -o test
 ptest: ptest.cpp tree.h treeprinter.cpp treeprinter.h
 	g++ -O0 -ggdb -std=c++11 treeprinter.cpp ptest.cpp -o ptest
+pdelete: pdelete.cpp tree.h treeprinter.cpp treeprinter.h
+	g++ -O0 -ggdb -std=c++11 treeprinter.cpp pdelete.cpp -lpthread -o pdelete
 clean:
 	rm rbtree
 	rm test
+	rm ptest
+	rm pdelete

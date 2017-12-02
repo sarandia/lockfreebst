@@ -5,6 +5,8 @@
 #include <vector>
 #include <iterator>
 #include <string>
+#include <iostream>
+#include <sstream>
 #include <atomic>
 
 namespace lock_free_rbtree {
@@ -71,7 +73,6 @@ class TreeNode {
 
   DataNode<KeyType, ValueType> *GetData() {
     DataNode<KeyType, ValueType> *data_ptr = data;
-    data_ptr = (void *) ((long) (data_ptr) & 0x0);
     return data_ptr;
   }
   void SetData(DataNode<KeyType, ValueType> *new_data) {
@@ -148,6 +149,28 @@ class DataNode {
       if (op != NULL) {
         delete op;
       }
+    }
+
+    std::string ToString() {
+      std::stringstream ss;
+      ss << key;
+
+      if (isExternal_) {
+        ss << "*";
+      } else {
+        if (color == red) {
+          ss << "R";
+        } else {
+          ss << "B";
+        }
+      }
+      if (own == FREE) {
+        ss << "F";
+      } else {
+        ss <<"O";
+      }
+
+      return ss.str();
     }
 
   private:
@@ -1230,7 +1253,11 @@ bool TreeNode<KeyType, ValueType>::swap_window(TreeNode<KeyType, ValueType> *rbt
   DataNode<KeyType, ValueType> *old_data) {
   // TODO: need compare_and_swap here
   //data = rbt->GetRoot()->data;
-  return data.compare_exchange_strong(old_data, rbt->data);
+  bool res = data.compare_exchange_strong(old_data, rbt->data);
+  if (!res) {
+    std::cout << "Swap window failed: old: " << old_data->ToString() << " new: " << rbt->GetData()->ToString() << std::endl;
+  }
+  return res;
 }
 
 template <typename KeyType, typename ValueType>
@@ -1238,7 +1265,11 @@ bool TreeNode<KeyType, ValueType>::swap_data(DataNode<KeyType, ValueType> *new_d
   DataNode<KeyType, ValueType> *old_data) {
   // TODO: need compare_and_swap here
   //data = rbt->GetRoot()->data;
-  return data.compare_exchange_strong(old_data, new_data);
+  bool res = data.compare_exchange_strong(old_data, new_data);
+  if (!res) {
+    std::cout << "Swap data failed: old: " << old_data->ToString() << " new: " << new_data->ToString() << std::endl;
+  }
+  return res;
 }
 
 }
