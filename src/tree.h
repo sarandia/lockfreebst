@@ -611,8 +611,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   printf("q[0] = %p\n", q[0]);
   printf("x = %p\n", x);
   x->swap_window(fix_window_color(q, 0), old_data);
-  x->releaseOwnership(old_data);
-  printf("ownership of q[0] = %d\n", q[0]->GetOwn());
+  printf("ownership of x = %d\n", x->GetOwn());
 }
 
 template <typename KeyType, typename ValueType>
@@ -1183,6 +1182,9 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vecto
   if (v.size() == 0) return NULL;
   // copy all nodes that are connected to the access path
   treenode_t *dup_w_root = new treenode_t(v[0]);
+  dup_w_root->SetOwn(FREE);
+  delete dup_w_root->GetOp();
+  dup_w_root->SetOp(NULL);
   new_acc_path.push_back(dup_w_root);
   treenode_t *prev_node = NULL;
   treenode_t *cur_w_node = dup_w_root;

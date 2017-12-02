@@ -12,6 +12,7 @@ int main() {
 	for (int i = start; i <= finish; i++) {
 		t->Insert(i,i);
 		//t->print_tree();
+		print2D(t->GetRoot());
 		cout << "Inserted " << i << endl;
 		if (!t->checkBlackDepth()) {
 			cout << "ERROR: checkBlackDepth() failed!" << endl;
