@@ -305,17 +305,20 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
       op_t help_op = old_data->op->operation;
       KeyType help_key = old_data->op->key;
       ValueType help_value = old_data->op->value;
+
+      ret->SetData(old_data);
       RBTree<KeyType, ValueType> help_rbt(ret, true);
+
       if (help_op == INSERT) {
         help_rbt.Insert(help_key, help_value);
       }
       else if (help_op == DELETE) {
         help_rbt.Remove(help_key);
       }
-      swap_window(help_rbt.GetRoot(), old_data);
+      swap_window(this, old_data);
       old_data = acquireOwnership(op, key, value, &new_data);
-      delete ret;
-      ret = new TreeNode<KeyType, ValueType>(new_data);
+
+      ret->SetData(new_data);
     }
     return ret;
   }
