@@ -68,7 +68,7 @@ class TreeNode {
   TreeNode<KeyType, ValueType> * GetRight();
   void SetLeft(TreeNode<KeyType, ValueType> *new_left);
   void SetRight(TreeNode<KeyType, ValueType> *new_right);
-  void Takeover(op_t op, KeyType key, ValueType value, bool need_own);
+  TreeNode<KeyType, ValueType> *Takeover(op_t op, KeyType key, ValueType value, bool need_own);
 
   DataNode<KeyType, ValueType> *GetData() {
     DataNode<KeyType, ValueType> *data_ptr = data;
@@ -79,12 +79,12 @@ class TreeNode {
     data = new_data;
   }
 
-  own_t *GetOwn() {
-    return data->own;
+  own_t GetOwn() {
+    return ((DataNode<KeyType, ValueType> *) data)->own;
   }
 
   void SetOwn(own_t new_own) {
-    data->own = new_own;
+    ((DataNode<KeyType, ValueType> *) data)->own = new_own;
   }
 
   bool ReplaceChild(TreeNode<KeyType, ValueType> *oldchld, TreeNode<KeyType, ValueType> *newchld) {
@@ -291,11 +291,11 @@ void TreeNode<KeyType, ValueType>::SetOp(operation_t *op) {
 }
 
 template <typename KeyType, typename ValueType>
-treenode_t *TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType value, bool need_own) {
+TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType value, bool need_own) {
 
   DataNode<KeyType, ValueType> *old_data;
   if (need_own) {
-
+    DataNode<KeyType, ValueType> *new_data;
     old_data = acquireOwnership(op, key, value);
 
     while (old_data->own == OWNED) {
@@ -310,9 +310,10 @@ treenode_t *TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueTy
         help_rbt.Remove(help_key);
       }
       swap_window(help_rbt.GetRoot(), old_data);
+      new_data = help_rbt.GetRoot()->data;
       old_data = acquireOwnership(op, key, value);
     }
-    treenode_t *ret = new treenode_t(help_rbt.GetRoot()->data);
+    TreeNode<KeyType, ValueType> *ret = new TreeNode<KeyType, ValueType>(new_data);
     return ret;
   }
   else {
@@ -351,7 +352,7 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
     new_data->op->operation = op;
     new_data->op->value = value;
 
-    if (this->swap_data(old_data, new_data)) {
+    if (this->swap_data(new_data, old_data)) {
       isSuccess = true;
       break;
     }
@@ -360,7 +361,13 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
 
     old_data = this->data;
   }
-
+  char t;
+  if (old_data->own == OWNED) {
+    t = 'O';
+  }
+  else {
+    t = 'F';
+  }
   return old_data;
 }
 
@@ -471,14 +478,10 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       // replace the current node x by the child of z along the access path
       if (key < z->GetKey()) {
         x = z->GetLeft();
-        // we have a new x, so we need to acquire its ownership and help if needed
-        x->Takeover(INSERT, key, value, true);
         y = x;
       }
       else {
         x = z->GetRight();
-        // we have a new x, so we need to acquire its ownership and help if needed
-        x->Takeover(INSERT, key, value, true);
         y = x;
       }
       successiveBlk = 0;
@@ -495,10 +498,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     // b. a black node with a black child is reached
     if (y->GetColor() == black && !y->IsExternal()) {
       if (y->GetLeft()->GetColor() == black || y->GetRight()->GetColor() == black) {
-        // repeat current node x by y
+        // replace current window root x by y
         x = y;
-        // we have a new x, so we need to acquire its ownership and help if needed
-        x->Takeover(INSERT, key, value, true);
         q.clear();
       }
     }
@@ -533,7 +534,9 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   }
   else {
     root_ = new_int;
-    root_->SetColor(black);
+    if (!isSubTree) {
+      root_->SetColor(black);
+    }
   }
   if (q.empty()) {
     q.push_back(y);
@@ -561,7 +564,6 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   //fix_insert(q);
   DataNode<KeyType, ValueType> *old_data = q[0]->data;
   recorded_win_root->swap_window(fix_window_color(q, 0), old_data);
-
 }
 
 template <typename KeyType, typename ValueType>

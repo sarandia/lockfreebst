@@ -34,7 +34,15 @@ static void print2DUtil(TreeNode<int, int> *root, int space)
         ext = 'B';
     else
         ext = 'R';
-    printf("%d%c\n", root->GetKey(), ext);
+
+    char own;
+    if (root->GetOwn()) {
+        own = 'O';
+    }
+    else {
+        own = 'F';
+    }
+    printf("%d%c%c\n", root->GetKey(), ext, own);
  
     // Process left child
     print2DUtil(root->GetLeft(), space);
