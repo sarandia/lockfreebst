@@ -363,7 +363,7 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
   while (true) {
     
     if (old_data->own != OWNED) {
-  
+      printf("a");
       int temp = FREE;
       DataNode<KeyType, ValueType> *pdata = this->GetData();
       if (pdata->own.compare_exchange_strong(temp, OWNED)) {
