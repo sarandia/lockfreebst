@@ -26,8 +26,7 @@ template <typename KeyType, typename ValueType>
 struct Operation {
   op_t operation;
   KeyType key;
-  ValueType Value;
-  std::vector<TreeNode<KeyType, ValueType> *> v;
+  ValueType value;
 };
 
 template <typename KeyType, typename ValueType>
@@ -179,12 +178,15 @@ bool TreeNode<KeyType, ValueType>::IsBlack() {
 
 template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::IsComplete() {
-  if (((DataNode<KeyType, ValueType> *) data)->left == NULL && ((DataNode<KeyType, ValueType> *) data)->right == NULL) {
+  if (((DataNode<KeyType, ValueType> *) data)->left == NULL && \
+    ((DataNode<KeyType, ValueType> *) data)->right == NULL) {
     return true;
   }
 
-  if (((DataNode<KeyType, ValueType> *) data)->left != NULL && ((DataNode<KeyType, ValueType> *) data)->right != NULL) {
-    return ((DataNode<KeyType, ValueType> *) data)->left->IsComplete() && ((DataNode<KeyType, ValueType> *) data)->right->IsComplete();
+  if (((DataNode<KeyType, ValueType> *) data)->left != NULL && \
+    ((DataNode<KeyType, ValueType> *) data)->right != NULL) {
+    return ((DataNode<KeyType, ValueType> *) data)->left->IsComplete() \
+    && ((DataNode<KeyType, ValueType> *) data)->right->IsComplete();
   }
 
   return false;
