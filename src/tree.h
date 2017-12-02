@@ -484,7 +484,6 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   int successiveBlk = 0;
   while (!y->IsExternal()) {
     // check if y is owned. if so, we perform Takeover()
-    printf("stuck in insert()\n");
     if (y == x) {
       y = y->Takeover(INSERT, key, value, true);
     }
@@ -608,10 +607,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
 
   //fix_insert(q);
   DataNode<KeyType, ValueType> *old_data = q[0]->data;
-  printf("q[0] = %p\n", q[0]);
-  printf("x = %p\n", x);
   x->swap_window(fix_window_color(q, 0), old_data);
-  printf("ownership of x = %d\n", x->GetOwn());
 }
 
 template <typename KeyType, typename ValueType>

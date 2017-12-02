@@ -6,20 +6,20 @@ using namespace std;
 
 int main() {
 	RBTree<int, int> *t = new RBTree<int, int>();
-	int start = 1, finish = 10;
+	int start = 1, finish = 10000;
   	
 	cout << "Successfully created rb tree object" << endl;
 	for (int i = start; i <= finish; i++) {
 		t->Insert(i,i);
 		//t->print_tree();
-		print2D(t->GetRoot());
-		cout << "Inserted " << i << endl;
-		if (!t->checkBlackDepth()) {
+		//print2D(t->GetRoot());
+		//cout << "Inserted " << i << endl;
+		/*if (!t->checkBlackDepth()) {
 			cout << "ERROR: checkBlackDepth() failed!" << endl;
 			exit(1);
-		}
+		}*/
 	}
-	print2D(t->GetRoot());
+	//print2D(t->GetRoot());
 	for (int i = start; i <= finish; i++) {
 		TreeNode<int, int> *found = t->Search(i);
 		if (found == NULL) {
