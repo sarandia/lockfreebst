@@ -918,7 +918,7 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
         curNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), false);
       }
 			v.push_back(curNode);
-			//fix_delete(v);
+			fix_delete(v);
       /*std::cout << "Access Path: ";
       for (auto node:v) {
         std::cout << node->GetKey() << ",";
@@ -936,7 +936,7 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
       std::cout << std::endl;*/
 
       DataNode<KeyType, ValueType> *old_data = v[0]->data;
-      recordedWinRoot->swap_window(fix_window_color(v, 1), old_data);
+      recordedWinRoot->releaseOwnership(old_data);
 			return;
 		}
 		else {
@@ -947,9 +947,9 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 				par->GetRight()->SetColor(red);
 				par->GetLeft()->SetColor(red);
 
-				//fix_delete(v);
+				fix_delete(v);
         DataNode<KeyType, ValueType> *old_data = v[0]->data;
-        recordedWinRoot->swap_window(fix_window_color(v, 1), old_data);
+        recordedWinRoot->releaseOwnership(old_data);
 
         par = *(v.rbegin());
         recordedWinRoot = par;
