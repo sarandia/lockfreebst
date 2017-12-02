@@ -67,6 +67,7 @@ class TreeNode {
 
   DataNode<KeyType, ValueType> *GetData() {
     DataNode<KeyType, ValueType> *data_ptr = data;
+    data_ptr = (void *) ((long) (data_ptr) & 0x0);
     return data_ptr;
   }
   void SetData(DataNode<KeyType, ValueType> *new_data) {
