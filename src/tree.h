@@ -333,10 +333,7 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
 	if (need_own) {
 		DataNode<KeyType, ValueType> *new_data;
 
-
-		while (!acquireOwnership(op, key, value, &new_data)) {
-      printf("stuck in Takeover()->while loop\n");
-    }
+    acquireOwnership(op, key, value, &new_data);
     
 		return this;
 	}
@@ -364,7 +361,8 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
   bool isSuccess = false;
 
   while (true) {
-    //printf("old_data->own = %d\n", old_data->own);
+    printf("old_data->own = %d\n", old_data->own);
+    
     if (old_data->own != OWNED) {
   
       int temp = FREE;
