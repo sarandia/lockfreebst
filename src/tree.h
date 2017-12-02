@@ -133,7 +133,15 @@ class DataNode {
       value = n->value;
       color = n->color;
       own = n->own;
-      op = n->op;
+
+      if (n->op != NULL) {
+        op = new operation_t;
+        op->key = n->op->key;
+        op->value = n->op->value;
+        op->operation = n->op->operation;
+      } else {
+        op = NULL;
+      }
     }
 
     ~DataNode() {
@@ -306,7 +314,14 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
       KeyType help_key = old_data->op->key;
       ValueType help_value = old_data->op->value;
 
-      ret->SetData(old_data);
+      ret->SetData(new DataNode<KeyType, ValueType>(old_data));
+
+      if (ret->GetOp()!= NULL) {
+        delete ret->GetOp();
+        ret->SetOp(NULL);
+        ret->SetOwn(FREE);
+      }
+
       RBTree<KeyType, ValueType> help_rbt(ret, true);
 
       if (help_op == INSERT) {
@@ -315,7 +330,7 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
       else if (help_op == DELETE) {
         help_rbt.Remove(help_key);
       }
-      swap_window(this, old_data);
+      this->swap_window(help_rbt.GetRoot(), old_data);
       old_data = acquireOwnership(op, key, value, &new_data);
 
       ret->SetData(new_data);
