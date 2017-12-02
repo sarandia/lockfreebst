@@ -64,6 +64,7 @@ class TreeNode {
   TreeNode<KeyType, ValueType> * GetRight();
   void SetLeft(TreeNode<KeyType, ValueType> *new_left);
   void SetRight(TreeNode<KeyType, ValueType> *new_right);
+  void Takeover(op_t op, KeyType key, ValueType value, bool need_own);
 
   DataNode<KeyType, ValueType> *GetData() {
     DataNode<KeyType, ValueType> *data_ptr = data;
@@ -285,6 +286,49 @@ void TreeNode<KeyType, ValueType>::SetOp(operation_t *op) {
 }
 
 template <typename KeyType, typename ValueType>
+void TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType value, bool need_own) {
+  DataNode<KeyType, ValueType> *old_data;
+  if (need_own) {
+
+    old_data = acquireOwnership(op, key, value);
+
+    while (old_data->GetOwn() == OWNED) {
+      op_t help_op = old_data->op->operation;
+      KeyType help_key = old_data->op->key;
+      ValueType help_value = old_data->op->value;
+      RBTree<KeyType, ValueType> *help_rbt(this, true);
+      if (help_op == INSERT) {
+        help_rbt->Insert(help_key, help_value);
+      }
+      else if (help_op == DELETE) {
+        help_rbt->Remove(help_key);
+      }
+      swap_window(help_rbt->GetRoot(), old_data);
+      old_data = acquireOwnership(op, key, value);
+    }
+  }
+  else {
+    old_data = this->data;
+
+    if (old_data->GetOwn() == OWNED) {
+      op_t help_op = old_data->op->operation;
+      KeyType help_key = old_data->op->key;
+      ValueType help_value = old_data->op->value;
+      RBTree<KeyType, ValueType> *help_rbt(this, true);
+      if (help_op == INSERT) {
+        help_rbt->Insert(help_key, help_value);
+      }
+      else if (help_op == DELETE) {
+        help_rbt->Remove(help_key);
+      }
+      swap_window(help_rbt->GetRoot(), old_data);
+    }
+  }
+  // need to help another process
+  
+}
+
+template <typename KeyType, typename ValueType>
 DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op_t op, KeyType key, ValueType value) {
   DataNode<KeyType, ValueType> *old_data = this->data;
   DataNode<KeyType, ValueType> *new_data = new DataNode<KeyType, ValueType>(this->data);
@@ -371,7 +415,10 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   } 
   // 1. make the top-down invariant true initially
   treenode_t *x = root_;
-  if (x->GetColor() == red) x->SetColor(black);
+
+  if (x->GetColor() == red && !isSubTree) {
+    x->SetColor(black);
+  }
   // 2. walking down from the current node
   treenode_t *y = x;
   treenode_t *prev = NULL;
@@ -400,7 +447,6 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       z->SetColor(red);
       z->GetLeft()->SetColor(black);
       z->GetRight()->SetColor(black);
-      //printf("HERE!!! 4 BLACK!!!\n");
       // fix color problems
       //fix_insert(q);
       DataNode<KeyType, ValueType> *old_data = q[0]->data;
