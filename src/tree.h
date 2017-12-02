@@ -310,10 +310,6 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
     old_data = this->data;
   }
 
-  if (!isSuccess) {
-    delete new_data;
-  }
-
   return old_data;
 }
 
