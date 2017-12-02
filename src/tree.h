@@ -364,7 +364,7 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
   bool isSuccess = false;
 
   while (true) {
-    printf("stuck in acquireOwnership()\n");
+    //printf("old_data->own = %d\n", old_data->own);
     if (old_data->own != OWNED) {
   
       int temp = FREE;
