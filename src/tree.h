@@ -96,7 +96,7 @@ class TreeNode {
 
   private:
     std::atomic<DataNode<KeyType, ValueType> *> data;
-    void swap_window(TreeNode<KeyType, ValueType> *rbt, DataNode<KeyType, ValueType> *old_data);
+    bool swap_window(TreeNode<KeyType, ValueType> *rbt, DataNode<KeyType, ValueType> *old_data);
 };
 
 template <typename KeyType, typename ValueType>
@@ -1049,14 +1049,11 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::clone_subtree(treenode
 }
 
 template <typename KeyType, typename ValueType>
-void TreeNode<KeyType, ValueType>::swap_window(TreeNode<KeyType, ValueType> *rbt, \
+bool TreeNode<KeyType, ValueType>::swap_window(TreeNode<KeyType, ValueType> *rbt, \
   DataNode<KeyType, ValueType> *old_data) {
   // TODO: need compare_and_swap here
   //data = rbt->GetRoot()->data;
-  bool cas = data.compare_exchange_strong(old_data, rbt->data);
-  if (!cas) {
-    printf("CAS FAILED\n");
-  }
+  return data.compare_exchange_strong(old_data, rbt->data);
 }
 
 }
