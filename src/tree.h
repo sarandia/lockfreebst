@@ -342,7 +342,7 @@ bool TreeNode<KeyType, ValueType>::releaseOwnership(DataNode<KeyType, ValueType>
   delete new_data->op;
   new_data->op = NULL;
 
-  return this->swap_data(old_data, new_data);
+  return this->swap_data(new_data, old_data);
 }
 
 template <typename KeyType, typename ValueType>
