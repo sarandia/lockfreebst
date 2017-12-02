@@ -314,7 +314,7 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
 			op_t help_op = old_data->op->operation;
 			KeyType help_key = old_data->op->key;
 			ValueType help_value = old_data->op->value;
-      //printf("Helping node key = %d, operation = %d\n", help_key, help_op);
+      printf("Helping node key = %d, operation = %d\n", help_key, help_op);
 
 			ret->SetData(new DataNode<KeyType, ValueType>(old_data));
 
@@ -488,14 +488,16 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   int successiveBlk = 0;
   while (!y->IsExternal()) {
     // check if y is owned. if so, we perform Takeover()
-    if (y == x) {
-      y = y->Takeover(INSERT, key, value, true);
+    if (!(isSubTree && y==x)) {
+      if (y == x) {
+        y = y->Takeover(INSERT, key, value, true);
+      }
+      else {
+        y->Takeover(INSERT, key, value, false);
+      }
     }
-    else {
-      y->Takeover(INSERT, key, value, false);
-    }
-    //printf("stuck in insert(), y->key = %d, y->own = %d\n", y->GetKey(), y->GetOwn());
-    //printf("y->address = %p\n", y);
+    printf("stuck in insert(), y->key = %d, y->own = %d\n", y->GetKey(), y->GetOwn());
+    printf("y->address = %p, isSubtree = %d\n", y, isSubTree);
     // check if node is black with 2 red chilren
     q.push_back(y);
     prev = y;
@@ -521,7 +523,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       // fix color problems
       //fix_insert(q);
       DataNode<KeyType, ValueType> *old_data = q[0]->data;
-      q[0]->swap_window(fix_window_color(q, 0), old_data);
+      x->swap_window(fix_window_color(q, 0), old_data);
       // replace the current node x by the child of z along the access path
       if (key < z->GetKey()) {
         x->releaseOwnership(q[0]->data);

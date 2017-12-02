@@ -9,13 +9,13 @@ using namespace lock_free_rbtree;
 using namespace std;
 
 int insert_start1 = 1;
-int insert_end1 = 4;
+int insert_end1 = 3;
 
 int delete_start1 = 1;
 int delete_end1 = 1;
 
 int insert_start2 = 5;
-int insert_end2 = 9;
+int insert_end2 = 7;
 
 int delete_start2 = 3;
 int delete_end2 = 3;
@@ -83,6 +83,7 @@ void *threadfunc2(void *tid) {
 }
 
 int main() {
+    //t->Insert(1000000, 1000000);
 
     set<int> remain_set;
     set<int> delete_set;
