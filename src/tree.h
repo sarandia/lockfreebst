@@ -324,7 +324,7 @@ void TreeNode<KeyType, ValueType>::SetOp(operation_t *op) {
 
 template <typename KeyType, typename ValueType>
 TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType value, bool need_own) {
-
+  //printf("stuck in Takeover()\n");
 	DataNode<KeyType, ValueType> *old_data;
 	TreeNode<KeyType, ValueType> *ret = new TreeNode<KeyType, ValueType>(static_cast<DataNode<KeyType, ValueType>*>(NULL));
 
@@ -337,6 +337,7 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
 			op_t help_op = old_data->op->operation;
 			KeyType help_key = old_data->op->key;
 			ValueType help_value = old_data->op->value;
+      printf("Helping node key = %d, operation = %d\n", help_key, help_op);
 
 			ret->SetData(new DataNode<KeyType, ValueType>(old_data));
 
@@ -488,9 +489,12 @@ template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   if (root_ == NULL) {
     root_ = new treenode_t(true);
+    treenode_t *dup_w_root = NULL;
+    dup_w_root = root_->Takeover(INSERT, key, value, true);
     root_->SetColor(black);
     root_->SetKey(key);
     root_->SetValue(value);
+    root_->releaseOwnership(dup_w_root->data);
     return;
   }
   // 1. make the top-down invariant true initially
@@ -507,12 +511,16 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   int successiveBlk = 0;
   while (!y->IsExternal()) {
     // check if y is owned. if so, we perform Takeover()
-    if (y == x) {
-      y = y->Takeover(INSERT, key, value, true);
+    if (!(isSubTree && y==x)) {
+      if (y == x) {
+        y = y->Takeover(INSERT, key, value, true);
+      }
+      else {
+        y->Takeover(INSERT, key, value, false);
+      }
     }
-    else {
-      y->Takeover(INSERT, key, value, false);
-    }
+    printf("stuck in insert(), y->key = %d, y->own = %d\n", y->GetKey(), y->GetOwn());
+    printf("y->address = %p, isSubtree = %d\n", y, isSubTree);
     // check if node is black with 2 red chilren
     q.push_back(y);
     prev = y;
@@ -538,7 +546,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       // fix color problems
       //fix_insert(q);
       DataNode<KeyType, ValueType> *old_data = q[0]->data;
-      q[0]->swap_window(fix_window_color(q, 0), old_data);
+      x->swap_window(fix_window_color(q, 0), old_data);
       // replace the current node x by the child of z along the access path
       if (key < z->GetKey()) {
         x->releaseOwnership(q[0]->data);
@@ -1202,7 +1210,9 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vecto
   // copy all nodes that are connected to the access path
   treenode_t *dup_w_root = new treenode_t(v[0]);
   dup_w_root->SetOwn(FREE);
-  delete dup_w_root->GetOp();
+  if (dup_w_root->GetOp() != NULL) {
+    delete dup_w_root->GetOp();
+  }
   dup_w_root->SetOp(NULL);
   new_acc_path.push_back(dup_w_root);
   treenode_t *prev_node = NULL;
@@ -1217,6 +1227,11 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vecto
     if (prev_node->GetLeft() == node) {
       cur_w_node->SetRight(clone_subtree(prev_node->GetRight(), 0));
       treenode_t *new_w_node = new treenode_t(node);
+      new_w_node->SetOwn(FREE);
+      if (new_w_node->GetOp() != NULL) {
+        delete new_w_node->GetOp();
+      }
+      new_w_node->SetOp(NULL);
       cur_w_node->SetLeft(new_w_node);
       new_acc_path.push_back(new_w_node);
       cur_w_node = new_w_node;
@@ -1224,6 +1239,11 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::copy_window(std::vecto
     else {
       cur_w_node->SetLeft(clone_subtree(prev_node->GetLeft(), 0));
       treenode_t *new_w_node = new treenode_t(node);
+      new_w_node->SetOwn(FREE);
+      if (new_w_node->GetOp() != NULL) {
+        delete new_w_node->GetOp();
+      }
+      new_w_node->SetOp(NULL);
       cur_w_node->SetRight(new_w_node);
       new_acc_path.push_back(new_w_node);
       cur_w_node = new_w_node;
@@ -1241,6 +1261,11 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::clone_subtree(treenode
   treenode_t *new_root;
   if (n == NULL) return NULL;
   new_root = new treenode_t(n);
+  new_root->SetOwn(FREE);
+  if (new_root->GetOp() != NULL) {
+    delete new_root->GetOp();
+  }
+  new_root->SetOp(NULL);
   if (depth < 3) {
     new_root->SetLeft(clone_subtree(n->GetLeft(), depth+1));
     new_root->SetRight(clone_subtree(n->GetRight(), depth+1));
