@@ -96,6 +96,7 @@ class TreeNode {
   }
 
   DataNode<KeyType, ValueType> * acquireOwnership(op_t op, KeyType key, ValueType value);
+  void releaseOwnership();
 
   private:
     std::atomic<DataNode<KeyType, ValueType> *> data;
@@ -292,36 +293,36 @@ void TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType valu
 
     old_data = acquireOwnership(op, key, value);
 
-    while (old_data->GetOwn() == OWNED) {
+    while (old_data->own == OWNED) {
       op_t help_op = old_data->op->operation;
       KeyType help_key = old_data->op->key;
       ValueType help_value = old_data->op->value;
-      RBTree<KeyType, ValueType> *help_rbt(this, true);
+      RBTree<KeyType, ValueType> help_rbt(this, true);
       if (help_op == INSERT) {
-        help_rbt->Insert(help_key, help_value);
+        help_rbt.Insert(help_key, help_value);
       }
       else if (help_op == DELETE) {
-        help_rbt->Remove(help_key);
+        help_rbt.Remove(help_key);
       }
-      swap_window(help_rbt->GetRoot(), old_data);
+      swap_window(help_rbt.GetRoot(), old_data);
       old_data = acquireOwnership(op, key, value);
     }
   }
   else {
     old_data = this->data;
 
-    if (old_data->GetOwn() == OWNED) {
+    if (old_data->own == OWNED) {
       op_t help_op = old_data->op->operation;
       KeyType help_key = old_data->op->key;
       ValueType help_value = old_data->op->value;
-      RBTree<KeyType, ValueType> *help_rbt(this, true);
+      RBTree<KeyType, ValueType> help_rbt(this, true);
       if (help_op == INSERT) {
-        help_rbt->Insert(help_key, help_value);
+        help_rbt.Insert(help_key, help_value);
       }
       else if (help_op == DELETE) {
-        help_rbt->Remove(help_key);
+        help_rbt.Remove(help_key);
       }
-      swap_window(help_rbt->GetRoot(), old_data);
+      swap_window(help_rbt.GetRoot(), old_data);
     }
   }
   // need to help another process
@@ -415,6 +416,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   } 
   // 1. make the top-down invariant true initially
   treenode_t *x = root_;
+  // try to inject operation into root
+  x->Takeover(INSERT, key, value, true);
 
   if (x->GetColor() == red && !isSubTree) {
     x->SetColor(black);
@@ -425,6 +428,9 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   std::vector<treenode_t *> q;
   int successiveBlk = 0;
   while (!y->IsExternal()) {
+    // check if y is owned. if so, we perform Takeover()
+    y->Takeover(INSERT, key, value, false);
+
     // check if node is black with 2 red chilren
     q.push_back(y);
     prev = y;
@@ -454,10 +460,14 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       // replace the current node x by the child of z along the access path
       if (key < z->GetKey()) {
         x = z->GetLeft();
+        // we have a new x, so we need to acquire its ownership and help if needed
+        x->Takeover(INSERT, key, value, true);
         y = x;
       }
       else {
         x = z->GetRight();
+        // we have a new x, so we need to acquire its ownership and help if needed
+        x->Takeover(INSERT, key, value, true);
         y = x;
       }
       successiveBlk = 0;
@@ -476,6 +486,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       if (y->GetLeft()->GetColor() == black || y->GetRight()->GetColor() == black) {
         // repeat current node x by y
         x = y;
+        // we have a new x, so we need to acquire its ownership and help if needed
+        x->Takeover(INSERT, key, value, true);
         q.clear();
       }
     }
