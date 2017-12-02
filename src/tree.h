@@ -96,7 +96,6 @@ class TreeNode {
   }
 
   DataNode<KeyType, ValueType> * acquireOwnership(op_t op, KeyType key, ValueType value);
-  void releaseOwnership();
 
   private:
     std::atomic<DataNode<KeyType, ValueType> *> data;
