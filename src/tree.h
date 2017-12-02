@@ -100,6 +100,7 @@ class TreeNode {
   }
 
   DataNode<KeyType, ValueType> * acquireOwnership(op_t op, KeyType key, ValueType value);
+  bool releaseOwnership(DataNode<KeyType, ValueType> *old_data);
 
   private:
     std::atomic<DataNode<KeyType, ValueType> *> data;
@@ -332,6 +333,16 @@ treenode_t *TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueTy
     }
     return NULL;
   }
+}
+
+template <typename KeyType, typename ValueType>
+bool TreeNode<KeyType, ValueType>::releaseOwnership(DataNode<KeyType, ValueType> *old_data) {
+  DataNode<KeyType, ValueType> *new_data = new DataNode<KeyType, ValueType>(old_data);
+  new_data->own = FREE;
+  delete new_data->op;
+  new_data->op = NULL;
+
+  return this->swap_data(old_data, new_data);
 }
 
 template <typename KeyType, typename ValueType>
@@ -872,13 +883,15 @@ template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 	std::vector<treenode_t *> v;
 
-	treenode_t *curNode = root_;
+  treenode_t *curNode = root_;
+  treenode_t *recordedWinRoot = NULL;
 	int black_count = 0;
 
 	while (true) {
 
 		if (curNode->IsExternal()) {
       if (v.empty()) {
+        recordedWinRoot = curNode;
         curNode->Takeover(DELETE, key, value, true);
       } else {
         curNode->Takeover(DELETE, key, value, false);
@@ -900,9 +913,9 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
         std::cout << node->GetKey() << ",";
       } 
       std::cout << std::endl;*/
-      treenode_t *old_win_root = v[0];
+
       DataNode<KeyType, ValueType> *old_data = v[0]->data;
-      old_win_root->swap_window(fix_window_color(v, 1), old_data);
+      recordedWinRoot->swap_window(fix_window_color(v, 1), old_data);
 			return;
 		}
 		else {
@@ -914,11 +927,11 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 				par->GetLeft()->SetColor(red);
 
 				//fix_delete(v);
-        treenode_t *old_win_root = v[0];
         DataNode<KeyType, ValueType> *old_data = v[0]->data;
-        old_win_root->swap_window(fix_window_color(v, 1), old_data);
+        recordedWinRoot->swap_window(fix_window_color(v, 1), old_data);
 
         par = *(v.rbegin());
+        recordedWinRoot = par;
         v.clear();
         par->Takeover(DELETE, key, value, true);
 				v.push_back(par);
@@ -928,8 +941,13 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 
 			if (curNode->GetColor() != black || has_red_child_or_grandchild(curNode)) {
 				if (!v.empty()) {
-					treenode_t *tempNode = NULL;
-					tempNode = v.back();
+          treenode_t *tempNode = NULL;
+          tempNode = v.back();
+          
+          // Release
+          recordedWinRoot->releaseOwnership(v[0]->data);
+          recordedWinRoot = tempNode;
+
           v.clear();
 
           tempNode->Takeover(DELETE, key, value, true);
@@ -940,9 +958,10 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 			}
 			else {
 				black_count++;
-			}
-
+      }
+      
       if (v.empty()) {
+        recordedWinRoot = curNode;
         curNode->Takeover(DELETE, key, value, true);
       } else {
         curNode->Takeover(DELETE, key, value, false);
