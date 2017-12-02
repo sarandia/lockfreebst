@@ -6,7 +6,7 @@ using namespace std;
 
 int main() {
 	RBTree<int, int> *t = new RBTree<int, int>();
-	int start = 1, finish = 10000;
+	int start = 1, finish = 10;
   	
 	cout << "Successfully created rb tree object" << endl;
 	for (int i = start; i <= finish; i++) {
@@ -25,8 +25,6 @@ int main() {
 			cout << "ERROR: Key " << i << " was inserted but not found!!!" << endl;
 		}
 	}
-	t->Remove(5);
 	t->print_tree();
-	cout << "Removed 5" << endl;
   	return 0;
 }

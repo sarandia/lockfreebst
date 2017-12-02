@@ -295,7 +295,7 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
 
   DataNode<KeyType, ValueType> *old_data;
   if (need_own) {
-    DataNode<KeyType, ValueType> *new_data;
+    DataNode<KeyType, ValueType> *new_data = NULL;
     old_data = acquireOwnership(op, key, value);
 
     while (old_data->own == OWNED) {
@@ -372,13 +372,6 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
     delete new_data;
 
     old_data = this->data;
-  }
-  char t;
-  if (old_data->own == OWNED) {
-    t = 'O';
-  }
-  else {
-    t = 'F';
   }
   return old_data;
 }
@@ -576,6 +569,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
 
   //fix_insert(q);
   DataNode<KeyType, ValueType> *old_data = q[0]->data;
+  printf("q[0] = %p\n", q[0]);
+  printf("x = %p\n", x);
   x->swap_window(fix_window_color(q, 0), old_data);
 }
 
