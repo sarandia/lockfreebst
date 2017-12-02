@@ -473,6 +473,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   int successiveBlk = 0;
   while (!y->IsExternal()) {
     // check if y is owned. if so, we perform Takeover()
+    printf("stuck in insert()\n");
     if (y == x) {
       y = y->Takeover(INSERT, key, value, true);
     }
@@ -507,12 +508,12 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       q[0]->swap_window(fix_window_color(q, 0), old_data);
       // replace the current node x by the child of z along the access path
       if (key < z->GetKey()) {
-        x->releaseOwnership(q[0]->data);
+        //x->releaseOwnership(q[0]->data);
         x = z->GetLeft();
         y = x;
       }
       else {
-        x->releaseOwnership(q[0]->data);
+        //x->releaseOwnership(q[0]->data);
         x = z->GetRight();
         y = x;
       }
@@ -531,7 +532,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     if (y->GetColor() == black && !y->IsExternal()) {
       if (y->GetLeft()->GetColor() == black || y->GetRight()->GetColor() == black) {
         // replace current window root x by y
-        x->releaseOwnership(q[0]->data);
+        //x->releaseOwnership(q[0]->data);
         x = y;
         q.clear();
       }
@@ -599,7 +600,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   printf("q[0] = %p\n", q[0]);
   printf("x = %p\n", x);
   x->swap_window(fix_window_color(q, 0), old_data);
-  x->releaseOwnership(q[0]->data);
+  x->releaseOwnership(old_data);
+  printf("ownership of q[0] = %d\n", q[0]->GetOwn());
 }
 
 template <typename KeyType, typename ValueType>
