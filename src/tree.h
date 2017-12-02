@@ -584,6 +584,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   printf("q[0] = %p\n", q[0]);
   printf("x = %p\n", x);
   x->swap_window(fix_window_color(q, 0), old_data);
+  x->releaseOwnership(q[0]->data);
 }
 
 template <typename KeyType, typename ValueType>
