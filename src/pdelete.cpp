@@ -65,6 +65,8 @@ int main() {
     set<int> remain_set;
     set<int> delete_set;
 
+    t->Insert(999999, 999999);
+
     for (int i = insert_start1; i <= insert_end1; i++) {
         remain_set.insert(i);
         insert_set.insert(i);
@@ -91,6 +93,8 @@ int main() {
         cout << "Inserted " << *itr << endl;
     }
 
+    print2D(t->GetRoot());
+
     pthread_t t1, t2;
     pthread_create(&t1, NULL, threadfunc1, (void *) NULL);
     pthread_create(&t2, NULL, threadfunc2, (void *) NULL);
@@ -99,7 +103,7 @@ int main() {
 	pthread_join(t1, &status);
     pthread_join(t2, &status);
     
-    //print2D(t->GetRoot());
+    print2D(t->GetRoot());
 
     t->checkBlackDepth();
 
