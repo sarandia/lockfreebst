@@ -976,7 +976,7 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 			}
 
 			if (curNode->GetColor() != black || has_red_child_or_grandchild(curNode)) {
-				if (!v.empty()) {
+				if (v.size() > 1) {
           treenode_t *tempNode = NULL;
           tempNode = v.back();
           
