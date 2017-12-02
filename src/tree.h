@@ -351,8 +351,8 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
 
 template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::releaseOwnership(DataNode<KeyType, ValueType> *old_data) {
-  this->data->own = FREE;
-  return truel
+  this->SetOwn(FREE);
+  return true;
 }
 
 template <typename KeyType, typename ValueType>
@@ -367,7 +367,9 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
 
     if (old_data->own != OWNED) {
   
-      if (this->swap_data(OWNED, old_data)) {
+      int temp = OWNED;
+      DataNode<KeyType, ValueType> *pdata = this->GetData();
+      if (pdata->own.compare_exchange_strong(temp, FREE)) {
         isSuccess = true;
         break;
       }
