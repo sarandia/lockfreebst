@@ -340,8 +340,10 @@ template <typename KeyType, typename ValueType>
 bool TreeNode<KeyType, ValueType>::releaseOwnership(DataNode<KeyType, ValueType> *old_data) {
   DataNode<KeyType, ValueType> *new_data = new DataNode<KeyType, ValueType>(old_data);
   new_data->own = FREE;
-  delete new_data->op;
-  new_data->op = NULL;
+  if (new_data->op != NULL) {
+    delete new_data->op;
+    new_data->op = NULL;
+  }
 
   return this->swap_data(new_data, old_data);
 }
