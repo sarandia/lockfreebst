@@ -519,12 +519,12 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       q[0]->swap_window(fix_window_color(q, 0), old_data);
       // replace the current node x by the child of z along the access path
       if (key < z->GetKey()) {
-        //x->releaseOwnership(q[0]->data);
+        x->releaseOwnership(q[0]->data);
         x = z->GetLeft();
         y = x;
       }
       else {
-        //x->releaseOwnership(q[0]->data);
+        x->releaseOwnership(q[0]->data);
         x = z->GetRight();
         y = x;
       }
@@ -543,7 +543,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     if (y->GetColor() == black && !y->IsExternal()) {
       if (y->GetLeft()->GetColor() == black || y->GetRight()->GetColor() == black) {
         // replace current window root x by y
-        //x->releaseOwnership(q[0]->data);
+        x->releaseOwnership(q[0]->data);
         x = y;
         q.clear();
       }
