@@ -367,9 +367,9 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
     printf("stuck in acquireOwnership()\n");
     if (old_data->own != OWNED) {
   
-      int temp = OWNED;
+      int temp = FREE;
       DataNode<KeyType, ValueType> *pdata = this->GetData();
-      if (pdata->own.compare_exchange_strong(temp, FREE)) {
+      if (pdata->own.compare_exchange_strong(temp, OWNED)) {
         isSuccess = true;
         break;
       }
