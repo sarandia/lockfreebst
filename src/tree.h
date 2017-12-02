@@ -47,6 +47,10 @@ class TreeNode {
     SetKey(n->GetKey());
   }
 
+  TreeNode(DataNode<KeyType, ValueType> *n) {
+    data = n;
+  }
+
   bool IsExternal();
   bool IsBlack();
   bool IsComplete();
@@ -286,7 +290,8 @@ void TreeNode<KeyType, ValueType>::SetOp(operation_t *op) {
 }
 
 template <typename KeyType, typename ValueType>
-void TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType value, bool need_own) {
+treenode_t *TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType value, bool need_own) {
+
   DataNode<KeyType, ValueType> *old_data;
   if (need_own) {
 
@@ -306,6 +311,8 @@ void TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType valu
       swap_window(help_rbt.GetRoot(), old_data);
       old_data = acquireOwnership(op, key, value);
     }
+    treenode_t *ret = new treenode_t(help_rbt.GetRoot()->data);
+    return ret;
   }
   else {
     old_data = this->data;
@@ -323,9 +330,8 @@ void TreeNode<KeyType, ValueType>::Takeover(op_t op, KeyType key, ValueType valu
       }
       swap_window(help_rbt.GetRoot(), old_data);
     }
+    return NULL;
   }
-  // need to help another process
-  
 }
 
 template <typename KeyType, typename ValueType>
@@ -412,11 +418,10 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     root_->SetKey(key);
     root_->SetValue(value);
     return;
-  } 
+  }
   // 1. make the top-down invariant true initially
   treenode_t *x = root_;
-  // try to inject operation into root
-  x->Takeover(INSERT, key, value, true);
+  treenode_t *recorded_win_root = x;
 
   if (x->GetColor() == red && !isSubTree) {
     x->SetColor(black);
@@ -428,7 +433,13 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   int successiveBlk = 0;
   while (!y->IsExternal()) {
     // check if y is owned. if so, we perform Takeover()
-    y->Takeover(INSERT, key, value, false);
+    if (y == x) {
+      recorded_win_root = y;
+      y = y->Takeover(INSERT, key, value, true);
+    }
+    else {
+      y->Takeover(INSERT, key, value, false);
+    }
 
     // check if node is black with 2 red chilren
     q.push_back(y);
@@ -548,7 +559,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
 
   //fix_insert(q);
   DataNode<KeyType, ValueType> *old_data = q[0]->data;
-  q[0]->swap_window(fix_window_color(q, 0), old_data);
+  recorded_win_root->swap_window(fix_window_color(q, 0), old_data);
 
 }
 
