@@ -74,6 +74,14 @@ class TreeNode {
     data = new_data;
   }
 
+  own_t *GetOwn() {
+    return data->own;
+  }
+
+  void SetOwn(own_t new_own) {
+    data->own = new_own;
+  }
+
   bool ReplaceChild(TreeNode<KeyType, ValueType> *oldchld, TreeNode<KeyType, ValueType> *newchld) {
     if (((DataNode<KeyType, ValueType> *) data)->left == oldchld) {
       ((DataNode<KeyType, ValueType> *) data)->left = newchld;
@@ -114,6 +122,8 @@ class DataNode {
       right = n->right;
       value = n->value;
       color = n->color;
+      own = n->own;
+      op = n->op;
     }
 
   private:
@@ -123,6 +133,7 @@ class DataNode {
     TreeNode<KeyType, ValueType> *right;
     bool isExternal_;
     ValueType value;
+    own_t own = FREE;
     operation_t *op = NULL;
 };
 
