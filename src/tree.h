@@ -44,7 +44,6 @@ class TreeNode {
   // copy constructor
   TreeNode(TreeNode<KeyType, ValueType> *n) {
     data = new DataNode<KeyType, ValueType>(n->data);
-    SetKey(n->GetKey());
   }
 
   TreeNode(DataNode<KeyType, ValueType> *n) {
@@ -127,6 +126,7 @@ class DataNode {
     }
 
     DataNode(DataNode<KeyType, ValueType> *n) {
+      key = n->key;
       isExternal_ = n->isExternal_;
       left = n->left;
       right = n->right;
