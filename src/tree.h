@@ -344,14 +344,24 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
       op_t help_op = old_data->op->operation;
       KeyType help_key = old_data->op->key;
       ValueType help_value = old_data->op->value;
-      RBTree<KeyType, ValueType> help_rbt(this, true);
+
+      ret->SetData(new DataNode<KeyType, ValueType>(old_data));
+      
+      if (ret->GetOp()!= NULL) {
+        delete ret->GetOp();
+        ret->SetOp(NULL);
+        ret->SetOwn(FREE);
+      }
+
+      RBTree<KeyType, ValueType> help_rbt(ret, true);
+
       if (help_op == INSERT) {
         help_rbt.Insert(help_key, help_value);
       }
       else if (help_op == DELETE) {
         help_rbt.Remove(help_key);
       }
-      swap_window(help_rbt.GetRoot(), old_data);
+      this->swap_window(help_rbt.GetRoot(), old_data);
     }
     return NULL;
   }
