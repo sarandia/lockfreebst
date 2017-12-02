@@ -99,7 +99,8 @@ class TreeNode {
     return false;
   }
 
-  DataNode<KeyType, ValueType> * acquireOwnership(op_t op, KeyType key, ValueType value);
+  DataNode<KeyType, ValueType> * acquireOwnership(op_t op, KeyType key, ValueType value, \
+    DataNode<KeyType, ValueType> **new_data);
   bool releaseOwnership(DataNode<KeyType, ValueType> *old_data);
 
   private:
@@ -295,14 +296,16 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
 
   DataNode<KeyType, ValueType> *old_data;
   if (need_own) {
-    DataNode<KeyType, ValueType> *new_data = NULL;
-    old_data = acquireOwnership(op, key, value);
+    DataNode<KeyType, ValueType> *new_data;
+    old_data = acquireOwnership(op, key, value, &new_data);
+    TreeNode<KeyType, ValueType> *ret;
+    ret = new TreeNode<KeyType, ValueType>(new_data);
 
     while (old_data->own == OWNED) {
       op_t help_op = old_data->op->operation;
       KeyType help_key = old_data->op->key;
       ValueType help_value = old_data->op->value;
-      RBTree<KeyType, ValueType> help_rbt(this, true);
+      RBTree<KeyType, ValueType> help_rbt(ret, true);
       if (help_op == INSERT) {
         help_rbt.Insert(help_key, help_value);
       }
@@ -310,10 +313,10 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
         help_rbt.Remove(help_key);
       }
       swap_window(help_rbt.GetRoot(), old_data);
-      new_data = help_rbt.GetRoot()->data;
-      old_data = acquireOwnership(op, key, value);
+      old_data = acquireOwnership(op, key, value, &new_data);
+      delete ret;
+      ret = new TreeNode<KeyType, ValueType>(new_data);
     }
-    TreeNode<KeyType, ValueType> *ret = new TreeNode<KeyType, ValueType>(new_data);
     return ret;
   }
   else {
@@ -349,7 +352,8 @@ bool TreeNode<KeyType, ValueType>::releaseOwnership(DataNode<KeyType, ValueType>
 }
 
 template <typename KeyType, typename ValueType>
-DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op_t op, KeyType key, ValueType value) {
+DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op_t op, KeyType key, ValueType value,
+  DataNode<KeyType, ValueType> **new_data_node) {
   DataNode<KeyType, ValueType> *old_data = this->data;
   DataNode<KeyType, ValueType> *new_data;
 
@@ -373,6 +377,9 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
 
     old_data = this->data;
   }
+  if (isSuccess) {
+    *new_data_node = new_data;
+  }
   return old_data;
 }
 
@@ -390,7 +397,9 @@ RBTree<KeyType, ValueType>::RBTree(treenode_t *root, bool subTree) {
 
 template <typename KeyType, typename ValueType>
 RBTree<KeyType, ValueType>::~RBTree() {
-  delete_tree(root_);
+  if (!isSubTree) {
+    delete_tree(root_);
+  }
 }
 
 template <typename KeyType, typename ValueType>
