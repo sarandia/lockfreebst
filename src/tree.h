@@ -458,7 +458,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     else {
       y->Takeover(INSERT, key, value, false);
     }
-
+    printf("stuck!\n");
     // check if node is black with 2 red chilren
     q.push_back(y);
     prev = y;
