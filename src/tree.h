@@ -337,7 +337,7 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
 			op_t help_op = old_data->op->operation;
 			KeyType help_key = old_data->op->key;
 			ValueType help_value = old_data->op->value;
-      printf("Helping node key = %d, operation = %d\n", help_key, help_op);
+      //printf("Helping node key = %d, operation = %d\n", help_key, help_op);
 
 			ret->SetData(new DataNode<KeyType, ValueType>(old_data));
 
@@ -519,8 +519,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
         y->Takeover(INSERT, key, value, false);
       }
     }
-    printf("stuck in insert(), y->key = %d, y->own = %d\n", y->GetKey(), y->GetOwn());
-    printf("y->address = %p, isSubtree = %d\n", y, isSubTree);
+    //printf("stuck in insert(), y->key = %d, y->own = %d\n", y->GetKey(), y->GetOwn());
+    //printf("y->address = %p, isSubtree = %d\n", y, isSubTree);
     // check if node is black with 2 red chilren
     q.push_back(y);
     prev = y;
