@@ -1,0 +1,11 @@
+Starting thread 2
+Starting thread 4
+Starting thread 1
+Starting thread 0
+Starting thread 6
+Starting thread 3
+Starting thread 5
+Starting thread 7
+Execution took 10.6221 seconds.
+Depth = 1
+Number of Nodes = 1
