@@ -9,16 +9,16 @@ using namespace lock_free_rbtree;
 using namespace std;
 
 int insert_start1 = 1;
-int insert_end1 = 10;
+int insert_end1 = 1000;
 
-int delete_start1 = 2;
-int delete_end1 = 4;
+int delete_start1 = 200;
+int delete_end1 = 400;
 
-int insert_start2 = 21;
-int insert_end2 = 20;
+int insert_start2 = 2000;
+int insert_end2 = 3000;
 
-int delete_start2 = 6;
-int delete_end2 = 8;
+int delete_start2 = 2200;
+int delete_end2 = 2400;
 
 RBTree<int, int> *t = new RBTree<int, int>();
 
@@ -93,7 +93,7 @@ int main() {
         cout << "Inserted " << *itr << endl;
     }
 
-    print2D(t->GetRoot());
+    //print2D(t->GetRoot());
 
     pthread_t t1, t2;
     pthread_create(&t1, NULL, threadfunc1, (void *) NULL);
@@ -103,7 +103,7 @@ int main() {
 	pthread_join(t1, &status);
     pthread_join(t2, &status);
     
-    print2D(t->GetRoot());
+    //print2D(t->GetRoot());
 
     t->checkBlackDepth();
 

@@ -363,7 +363,6 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
   while (true) {
     //printf("stcuck in acquireOwnership(), key = %d, own = %d\n", key, (int) old_data->own);
     if (old_data->own != OWNED) {
-      //printf("a");
       int temp = FREE;
       DataNode<KeyType, ValueType> *pdata = this->GetData();
       if (pdata->own.compare_exchange_strong(temp, OWNED)) {
@@ -908,16 +907,15 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 
   treenode_t *curNode = root_;
   treenode_t *recordedWinRoot = NULL;
-	int black_count = 0;
+  int black_count = 0;
+  
+  curNode = curNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), true);
 
 	while (true) {
 
 		if (curNode->IsExternal()) {
       if (v.empty()) {
         recordedWinRoot = curNode;
-        curNode = curNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), true);
-      } else {
-        curNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), false);
       }
 			v.push_back(curNode);
 			fix_delete(v);
@@ -950,14 +948,16 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 				par->GetLeft()->SetColor(red);
 
 				fix_delete(v);
-        DataNode<KeyType, ValueType> *old_data = v[0]->data;
-        recordedWinRoot->releaseOwnership(old_data);
-
+    
         par = *(v.rbegin());
-        recordedWinRoot = par;
+
         v.clear();
         par = par->Takeover(DELETE, key, static_cast<ValueType>(NULL), true);
 				v.push_back(par);
+
+        DataNode<KeyType, ValueType> *old_data = v[0]->data;
+        recordedWinRoot->releaseOwnership(old_data);
+        recordedWinRoot = par;
 
 				black_count = 0;
 			}
@@ -966,14 +966,14 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 				if (v.size() > 1) {
           treenode_t *tempNode = NULL;
           tempNode = v.back();
+
+          v.clear();
+          tempNode = tempNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), true);
+          v.push_back(tempNode);
           
           // Release
           recordedWinRoot->releaseOwnership(v[0]->data);
           recordedWinRoot = tempNode;
-
-          v.clear();
-          tempNode = tempNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), true);
-					v.push_back(tempNode);
 				}
 
 				black_count = 0;
@@ -984,10 +984,7 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
       
       if (v.empty()) {
         recordedWinRoot = curNode;
-        curNode = curNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), true);
-      } else {
-        curNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), false);
-      }
+      } 
 			v.push_back(curNode);
 
 			if (key <= curNode->GetKey()) {
@@ -995,7 +992,9 @@ void RBTree<KeyType, ValueType>::Remove(KeyType key) {
 			}
 			else {
 				curNode = curNode->GetRight();
-			}
+      }
+      
+      curNode->Takeover(DELETE, key, static_cast<ValueType>(NULL), false);
 		}
 	}
 }
