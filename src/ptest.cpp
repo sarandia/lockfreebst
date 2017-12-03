@@ -83,7 +83,6 @@ void *threadfunc2(void *tid) {
 }
 
 int main() {
-    t->Insert(0, 0);
 
     set<int> remain_set;
     set<int> delete_set;

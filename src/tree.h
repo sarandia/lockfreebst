@@ -215,7 +215,7 @@ class RBTree {
   
   private:
   treenode_t *root_;
-  void fix_insert(std::vector<treenode_t*> &v);
+  void fix_insert(std::vector<treenode_t*> q);
   bool has_red_child_or_grandchild(treenode_t *cur);
   bool has_red_child(treenode_t *cur);
   void fix_delete(std::vector<treenode_t *> &v);
@@ -361,9 +361,9 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
   bool isSuccess = false;
 
   while (true) {
-    
+    //printf("stcuck in acquireOwnership(), key = %d, own = %d\n", key, (int) old_data->own);
     if (old_data->own != OWNED) {
-      printf("a");
+      //printf("a");
       int temp = FREE;
       DataNode<KeyType, ValueType> *pdata = this->GetData();
       if (pdata->own.compare_exchange_strong(temp, OWNED)) {
@@ -443,10 +443,10 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     return;
   }
   // 1. make the top-down invariant true initially
+  root_->Takeover(INSERT, key, value, true);
   treenode_t *x = root_;
-  treenode_t *recorded_win_root = x;
 
-  if (x->GetColor() == red && !isSubTree) {
+  if (x->GetColor() == red) {
     x->SetColor(black);
   }
   // 2. walking down from the current node
@@ -456,11 +456,10 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   int successiveBlk = 0;
   while (!y->IsExternal()) {
     // check if y is owned. if so, we perform Takeover()
-    if (y == x) {
-      y->Takeover(INSERT, key, value, true);
-    }
-    else {
-      y->Takeover(INSERT, key, value, false);
+    if (x != root_) {
+      if (y != x) {
+        y->Takeover(INSERT, key, value, false);
+      }
     }
     //printf("stuck in insert(), y->key = %d, y->own = %d\n", y->GetKey(), y->GetOwn());
     //printf("y->address = %p, isSubtree = %d\n", y, isSubTree);
@@ -489,16 +488,17 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       // fix color problems
       fix_insert(q);
       // replace the current node x by the child of z along the access path
+      treenode_t *old_x = x;
       if (key < z->GetKey()) {
-        x->releaseOwnership(NULL);
         x = z->GetLeft();
         y = x;
       }
       else {
-        x->releaseOwnership(NULL);
         x = z->GetRight();
         y = x;
       }
+      x->Takeover(INSERT, key, value, true);
+      old_x->releaseOwnership(NULL);
       successiveBlk = 0;
       q.clear();
       // repeat the general step
@@ -514,6 +514,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     if (y->GetColor() == black && !y->IsExternal()) {
       if (y->GetLeft()->GetColor() == black || y->GetRight()->GetColor() == black) {
         // replace current window root x by y
+        y->Takeover(INSERT, key, value, true);
         x->releaseOwnership(NULL);
         x = y;
         q.clear();
@@ -526,7 +527,9 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   //if (!q.empty()) std::cout << "q[0] = " << q[0]->key << std::endl;
   if (y->GetKey() == key) return;
   treenode_t *new_int = new treenode_t(false);
+  new_int->Takeover(INSERT, key, value, false);
   treenode_t *new_item = new treenode_t(true);
+  new_item->Takeover(INSERT, key, value, false);
   new_item->SetKey(key);
   new_item->SetValue(value);
   if (y->GetKey() <= key) {
@@ -550,9 +553,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   }
   else {
     root_ = new_int;
-    if (!isSubTree) {
-      root_->SetColor(black);
-    }
+    root_->SetColor(black);
   }
   if (q.empty()) {
     q.push_back(y);
@@ -561,6 +562,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     q.clear(); // pop off y
   }
   q.push_back(new_int);
+  new_int->releaseOwnership(NULL);
+  new_item->releaseOwnership(NULL);
 
   // for debugging
   /*std::cout << "Access Path: ";
@@ -568,41 +571,44 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     std::cout << node->GetKey() << ",";
   }
   std::cout << std::endl;
-  std::vector<treenode_t *> v;
-  RBTree<KeyType, ValueType> *rbt = copy_window(q, v);
-  rbt->print_tree();
-  std::cout << "Copied Access Path: ";
-  for (auto node: v) {
-    std::cout << node->GetKey() << ",";
-  }
-  std::cout << std::endl;*/
+  std::vector<treenode_t *> v;*/
+
   fix_insert(q);
   x->releaseOwnership(NULL);
+  //for (auto node: q) {
+  //  node->releaseOwnership(NULL);
+  //}
+  //printf("q[0]->own = %d\n", q[0]->GetOwn());
 }
 
 template <typename KeyType, typename ValueType>
-void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
+void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> q) {
   if (q.size() == 1) return;
   bool is_violation = true;
   while (is_violation) {
     is_violation = false;
     treenode_t *cur = q.back();
+    if (cur != q[0]) cur->Takeover(INSERT, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
     if (cur->GetColor() == red) {
       treenode_t *parent = q[q.size()-2];
+      if (parent != q[0]) parent->Takeover(INSERT, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
       treenode_t *sibling;
       if (parent == q[0]) break;
       if (parent->GetColor() == red) { //&& sibling->color == red) {
         is_violation = true;
         treenode_t *grandparent = q[q.size()-3];
+        if (grandparent != q[0]) grandparent->Takeover(INSERT, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
         if (grandparent == q[0]) {
           q.pop_back();
           break;
         }
         if (parent->GetKey() <= grandparent->GetKey()) {
           sibling = grandparent->GetRight();
+          if (sibling != q[0]) sibling->Takeover(INSERT, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
         }
         else {
           sibling = grandparent->GetLeft();
+          if (sibling != q[0]) sibling->Takeover(INSERT, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
         }
         if (sibling->GetColor() == red) {
           grandparent->SetColor(red);
@@ -622,14 +628,17 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> &q) {
   // if reached the root of the tree, fix the last color violation
   if (q.size() <=2) {
     treenode_t *cur = q[1];
+    if (cur != q[0]) cur->Takeover(INSERT, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
     treenode_t *window_root = q[0];
     treenode_t *sibling;
     int direction = 0;
     if (window_root->GetLeft() == q[1]) {
       sibling = window_root->GetRight();
+      if (sibling != q[0]) sibling->Takeover(INSERT, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
     }
     else {
       sibling = window_root->GetLeft();
+      if (sibling != q[0]) sibling->Takeover(INSERT, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
       direction = 1;
     }
     // 3-c, both window_root and cur are red, and all children of cur are black
