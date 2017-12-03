@@ -5,7 +5,7 @@ debug: print_tree.cpp tree.h
 test: test_delete.cpp tree.h treeprinter.cpp treeprinter.h
 	g++ -O0 -ggdb -std=c++11 treeprinter.cpp test_delete.cpp -o test
 ptest: ptest.cpp tree.h treeprinter.cpp treeprinter.h
-	g++ -O0 -ggdb -std=c++11 treeprinter.cpp ptest.cpp -o ptest
+	g++ -O0 -ggdb -std=c++11 treeprinter.cpp ptest.cpp -lpthread -o ptest
 pdelete: pdelete.cpp tree.h treeprinter.cpp treeprinter.h
 	g++ -O0 -ggdb -std=c++11 treeprinter.cpp pdelete.cpp -lpthread -o pdelete
 bm: bench_modify.cpp tree.h treeprinter.cpp treeprinter.h
