@@ -228,6 +228,8 @@ class RBTree {
 
   // parallel algorithm helpers
   TreeNode<KeyType, ValueType> *fix_window_color(std::vector<treenode_t *> &v, int insert_or_delete);
+  void lock_unlock_window(std::vector<treenode_t *> v, int op);
+  void lock_unlock_subtree(treenode_t *n, int depth, int op);
   TreeNode<KeyType, ValueType> *copy_window(std::vector<treenode_t *> &v, std::vector<treenode_t *> &new_acc_path);
   TreeNode<KeyType, ValueType> *clone_subtree(treenode_t *n, int depth);
 };
@@ -361,7 +363,7 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
   bool isSuccess = false;
 
   while (true) {
-    //printf("stcuck in acquireOwnership(), key = %d, own = %d\n", key, (int) old_data->own);
+    //printf("stuck in acquireOwnership(), key = %d, own = %d\n", key, (int) old_data->own);
     if (old_data->own != OWNED) {
       int temp = FREE;
       DataNode<KeyType, ValueType> *pdata = this->GetData();
@@ -443,6 +445,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   }
   // 1. make the top-down invariant true initially
   root_->Takeover(INSERT, key, value, true);
+  lock_unlock_subtree(root_->GetLeft(), 0, 0);
+  lock_unlock_subtree(root_->GetRight(), 0, 0);
   treenode_t *x = root_;
 
   if (x->GetColor() == red) {
@@ -458,6 +462,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
     if (x != root_) {
       if (y != x) {
         y->Takeover(INSERT, key, value, false);
+        lock_unlock_subtree(y->GetLeft(), 0, 0);
+        lock_unlock_subtree(y->GetRight(), 0, 0);
       }
     }
     //printf("stuck in insert(), y->key = %d, y->own = %d\n", y->GetKey(), y->GetOwn());
@@ -497,6 +503,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
         y = x;
       }
       x->Takeover(INSERT, key, value, true);
+      lock_unlock_subtree(x->GetLeft(), 0, 0);
+      lock_unlock_subtree(x->GetRight(), 0, 0);
       old_x->releaseOwnership(NULL);
       successiveBlk = 0;
       q.clear();
@@ -514,6 +522,8 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       if (y->GetLeft()->GetColor() == black || y->GetRight()->GetColor() == black) {
         // replace current window root x by y
         y->Takeover(INSERT, key, value, true);
+        lock_unlock_subtree(y->GetLeft(), 0, 0);
+        lock_unlock_subtree(y->GetRight(), 0, 0);
         x->releaseOwnership(NULL);
         x = y;
         q.clear();
@@ -527,8 +537,12 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
   if (y->GetKey() == key) return;
   treenode_t *new_int = new treenode_t(false);
   new_int->Takeover(INSERT, key, value, false);
+  lock_unlock_subtree(new_int->GetLeft(), 0, 0);
+  lock_unlock_subtree(new_int->GetRight(), 0, 0);
   treenode_t *new_item = new treenode_t(true);
   new_item->Takeover(INSERT, key, value, false);
+  lock_unlock_subtree(new_item->GetLeft(), 0, 0);
+  lock_unlock_subtree(new_item->GetRight(), 0, 0);
   new_item->SetKey(key);
   new_item->SetValue(value);
   if (y->GetKey() <= key) {
@@ -574,15 +588,19 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
 
   fix_insert(q);
   x->releaseOwnership(NULL);
-  //for (auto node: q) {
-  //  node->releaseOwnership(NULL);
-  //}
+  /*for (auto node: q) {
+    lock_unlock_subtree(node->GetLeft(), 0, 1);
+    lock_unlock_subtree(node->GetRight(), 0, 1);
+    node->releaseOwnership(NULL);
+  }*/
   //printf("q[0]->own = %d\n", q[0]->GetOwn());
 }
 
 template <typename KeyType, typename ValueType>
 void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> q) {
   if (q.size() == 1) return;
+  //std::vector<treenode_t *> q_copy = q;
+  //lock_unlock_window(q, 0);
   bool is_violation = true;
   while (is_violation) {
     is_violation = false;
@@ -627,7 +645,7 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> q) {
   // if reached the root of the tree, fix the last color violation
   if (q.size() <=2) {
     treenode_t *cur = q[1];
-    if (cur != q[0]) cur->Takeover(INSERT, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
+    //if (cur != q[0]) cur->Takeover(INSERT, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
     treenode_t *window_root = q[0];
     treenode_t *sibling;
     int direction = 0;
@@ -649,7 +667,8 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> q) {
         window_root->SetColor(black);
       }
     }
-    else if (window_root->GetColor() == black && cur->GetColor() == red && sibling->GetColor() == red) {
+    else if (window_root->GetColor() == black && cur->GetColor() == red && \
+      sibling->GetColor() == red && (cur->GetLeft()->GetColor() == red || cur->GetRight()->GetColor() == red)) {
       window_root->SetColor(black);
       cur->SetColor(black);
       sibling->SetColor(black);
@@ -690,6 +709,7 @@ void RBTree<KeyType, ValueType>::fix_insert(std::vector<treenode_t *> q) {
       }
     }
   }
+  //lock_unlock_window(q_copy, 1);
 
 }
 
@@ -1155,6 +1175,51 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::fix_window_color(std::
   }
   // return the data node of the root TreeNode for later swapping
   return w_copy;
+}
+
+template <typename KeyType, typename ValueType>
+void RBTree<KeyType, ValueType>::lock_unlock_window(std::vector<treenode_t *> v, int op) {
+  printf("called lock_unlock_window()\n");
+  for (int i = 0; i < v.size()-1; i++) {
+    // takeover v
+    treenode_t *cur = v[i];
+    //if (op == 0) {
+    //  cur->Takeover(NOP, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), true);
+    //}
+    //else {
+    //  cur->releaseOwnership(NULL);
+    //}
+    // take over subtree up to 3 levels
+    treenode_t *next = v[i+1];
+    if (next == cur->GetLeft()) {
+      lock_unlock_subtree(cur->GetRight(), op, 0);
+    }
+    else {
+      lock_unlock_subtree(cur->GetLeft(), op, 0);
+    }
+  }
+  //if (op == 0) {
+  //  v.back()->Takeover(NOP, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), true);
+  //}
+  //else {
+  //  v.back()->releaseOwnership(NULL);
+  //}
+  printf("lock_unlock_window() finished\n");
+}
+
+template <typename KeyType, typename ValueType>
+void RBTree<KeyType, ValueType>::lock_unlock_subtree(treenode_t *n, int depth, int op) {
+  if (n == NULL) return;
+  if (op == 0) {
+    n->Takeover(NOP, static_cast<KeyType>(NULL), static_cast<ValueType>(NULL), false);
+  }
+  else {
+    n->releaseOwnership(NULL);
+  }
+  if (depth < 3) {
+    lock_unlock_subtree(n->GetLeft(), depth+1, op);
+    lock_unlock_subtree(n->GetRight(), depth+1, op);
+  }
 }
 
 template <typename KeyType, typename ValueType>
