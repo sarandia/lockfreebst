@@ -358,6 +358,10 @@ TreeNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
       else {
         old_data = this->data;
       }*/
+
+      auto newPointer = new TreeNode<KeyType, ValueType>(new DataNode<KeyType, ValueType>(old_data));
+      this->help(this, old_data, newPointer);
+      
       old_data = this->GetData();
     }
           
