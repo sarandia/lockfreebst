@@ -9,7 +9,7 @@ ptest: ptest.cpp tree.h treeprinter.cpp treeprinter.h
 pdelete: pdelete.cpp tree.h treeprinter.cpp treeprinter.h
 	g++ -O0 -ggdb -std=c++11 treeprinter.cpp pdelete.cpp -lpthread -o pdelete
 bm: bench_modify.cpp tree.h treeprinter.cpp treeprinter.h
-	g++ -O3 -ggdb -std=c++11 treeprinter.cpp bench_modify.cpp -lpthread -o bm
+	g++ -O0 -ggdb -std=c++11 treeprinter.cpp bench_modify.cpp -lpthread -o bm
 clean:
 	rm rbtree
 	rm test

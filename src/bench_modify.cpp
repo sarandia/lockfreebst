@@ -7,7 +7,7 @@
 #include <ctime>
 
 #define NUM_THREADS 4
-#define NUM_NODES 1000000
+#define NUM_NODES 100
 
 using namespace lock_free_rbtree;
 using namespace std;

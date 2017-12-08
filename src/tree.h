@@ -111,6 +111,7 @@ class TreeNode {
     std::atomic<DataNode<KeyType, ValueType> *> data;
     bool swap_data(DataNode<KeyType, ValueType> *new_data, DataNode<KeyType, ValueType> *old_data);
     bool swap_window(TreeNode<KeyType, ValueType> *rbt, DataNode<KeyType, ValueType> *old_data);
+    void help(TreeNode<KeyType, ValueType> *oldPointer, DataNode<KeyType, ValueType> *oldData, TreeNode<KeyType, ValueType> *newPointer);
 };
 
 template <typename KeyType, typename ValueType>
@@ -396,11 +397,20 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
   DataNode<KeyType, ValueType> **new_data_node) {
   DataNode<KeyType, ValueType> *old_data = this->data;
 
+  TreeNode<KeyType, ValueType> *newPointer = NULL;
+
   bool isSuccess = false;
 
   while (true) {
     //printf("stuck in acquireOwnership(), key = %d, own = %d\n", key, (int) old_data->own);
     if (old_data->own == OWNED) {
+
+      if (newPointer != NULL) {
+        delete newPointer;
+      }
+      newPointer = new TreeNode<KeyType, ValueType>(new DataNode<KeyType, ValueType>(old_data));
+        std::cout << key << " " << 1 << std::endl;
+
       // perform help
       //DataNode<KeyType, ValueType> *helped_datanode = this->Help();
       /*if (helped_datanode != NULL) {
@@ -411,7 +421,8 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
       else {
         old_data = this->data;
       }*/
-      old_data = this->data;
+      //old_data = this->data;
+      this->help(this, old_data, newPointer);
     }
     if (old_data->own != OWNED) {
       /*int temp = FREE;
@@ -440,6 +451,23 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
 
   *new_data_node = old_data;
   return old_data;
+}
+
+template <typename KeyType, typename ValueType>
+void TreeNode<KeyType, ValueType>::help(TreeNode<KeyType, ValueType> *oldPointer, DataNode<KeyType, ValueType> *oldData, TreeNode<KeyType, ValueType> *newPointer) {
+  auto *op = newPointer->GetOp();
+  newPointer->SetOp(NULL);
+  newPointer->SetOwn(FREE);
+  if (op->operation == INSERT) {
+    RBTree<KeyType, ValueType> ptree(newPointer, true);
+    ptree.Insert(op->key, op->value);
+  } else if (op->operation == DELETE) {
+    RBTree<KeyType, ValueType> ptree(newPointer, true);
+    ptree.Remove(op->key);
+  }
+  if (!oldPointer->data.compare_exchange_strong(oldData, newPointer->GetData())) {
+    std::cout << "failed" << std::endl;
+  }
 }
 
 template <typename KeyType, typename ValueType>
