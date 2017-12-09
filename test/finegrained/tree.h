@@ -405,18 +405,28 @@ void RBTree<KeyType, ValueType>::delete_tree(treenode_t *cur) {
 template <typename KeyType, typename ValueType>
 TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::Search(KeyType key) {
   treenode_t *cur = root_;
+  if (cur != NULL) {
+    return NULL;
+  }
+  
+  cur->Takeover(NOP, key, key, true);
   while (cur != NULL) {
     if (!cur->IsExternal()) {
       if (key <= cur->GetKey()) {
+        auto par = cur;
         cur = cur->GetLeft();
-        cur->Takeover(NOP, key, key, false);
+        cur->Takeover(NOP, key, key, true);
+        par->releaseOwnership(NULL);
       }
       else {
+        auto par = cur;
         cur = cur->GetRight();
-        cur->Takeover(NOP, key, key, false);
+        cur->Takeover(NOP, key, key, true);
+        par->releaseOwnership(NULL);
       }
     }
     else {
+      cur->releaseOwnership(NULL);
       if (cur->GetKey() == key) {
         return cur;
       }
