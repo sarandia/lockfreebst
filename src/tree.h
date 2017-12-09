@@ -592,7 +592,7 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
       z->GetLeft()->SetColor(black);
       z->GetRight()->SetColor(black);
       // fix color problems
-      DataNode<KeyType, ValueType> *old_data = q[0]->data;
+      //DataNode<KeyType, ValueType> *old_data = q[0]->data;
       x->swap_window(fix_window_color(q,0), old_data);
       // replace the current node x by the child of z along the access path
       treenode_t *old_x = x;
@@ -701,7 +701,9 @@ void RBTree<KeyType, ValueType>::Insert(KeyType key, ValueType value) {
 
   //fix_insert(q);
   //DataNode<KeyType, ValueType> *old_data = q[0]->GetData();
-  x->swap_window(fix_window_color(q, 0), old_data);
+  //old_data = q[0]->GetData();
+  bool cas = q[0]->swap_window(fix_window_color(q, 0), old_data);
+  //printf("cas = %d\n", cas);
   x->releaseOwnership(NULL);
   /*for (auto node: q) {
     lock_unlock_subtree(node->GetLeft(), 0, 1);
