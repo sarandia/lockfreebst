@@ -3,7 +3,7 @@
 #include <iterator>
 #include "tree.h"
 #include "treeprinter.h"
-#include <pthread.h>
+#include <thread>
 
 using namespace lock_free_rbtree;
 using namespace std;
@@ -95,13 +95,12 @@ int main() {
 
     //print2D(t->GetRoot());
 
-    pthread_t t1, t2;
-    pthread_create(&t1, NULL, threadfunc1, (void *) NULL);
-    pthread_create(&t2, NULL, threadfunc2, (void *) NULL);
+    thread *t1, *t2;
+    t1 = new thread(threadfunc1, (void *) NULL);
+    t2 = new thread(threadfunc2, (void *) NULL);
     
-    void *status;
-	pthread_join(t1, &status);
-    pthread_join(t2, &status);
+    t1->join();
+    t2->join();
     
     //print2D(t->GetRoot());
 
