@@ -7,7 +7,7 @@
 #include <ctime>
 
 #define NUM_THREADS 4
-#define NUM_NODES 1000000
+#define NUM_NODES 10000
 
 using namespace lock_free_rbtree;
 using namespace std;
@@ -18,24 +18,18 @@ int insert_end[NUM_THREADS];
 int delete_start[NUM_THREADS];
 int delete_end[NUM_THREADS];
 
+set<int> insert_set[NUM_THREADS];
+set<int> delete_set[NUM_THREADS];
+
 RBTree<int, int> *t = new RBTree<int, int>();
 
 void *threadfunc(void *tid) {
     int myid = (long) tid;
     printf("Starting thread %d\n", myid);
 
-	set<int> insert_set;
-    set<int> delete_set;
 
-    for (int i = insert_start[myid]; i <= insert_end[myid]; i++) {
-        insert_set.insert(i);
-    }
 
-    for (int i = delete_start[myid]; i <= delete_end[myid]; i++) {
-        delete_set.insert(i);
-    }
-
-    for (auto itr = insert_set.begin(); itr != insert_set.end(); itr++) {
+    for (auto itr = insert_set[myid].begin(); itr != insert_set[myid].end(); itr++) {
         t->Insert(*itr, *itr);
         //t->print_tree();
         //cout << "Inserted " << *itr << endl;
@@ -43,7 +37,12 @@ void *threadfunc(void *tid) {
         //for (int j = 0; j <= 1000000; j++);
     }
 
-    for (auto itr = delete_set.begin(); itr != delete_set.end(); itr++) {
+    for (auto itr = insert_set[myid].begin(); itr != insert_set[myid].end(); itr++) {
+        t->Search(*itr);
+
+    }
+
+    for (auto itr = delete_set[myid].begin(); itr != delete_set[myid].end(); itr++) {
         t->Remove(*itr);
         //t->print_tree();
 
@@ -56,14 +55,21 @@ void *threadfunc(void *tid) {
 
 int main() {
     t->Insert(0,0);
-    set<int> remain_set;
-    set<int> delete_set;
 
     for (int i = 0; i < NUM_THREADS; i++) {
         insert_start[i] = 1 + i * NUM_NODES/NUM_THREADS;
         delete_start[i] = 1 + i * NUM_NODES/NUM_THREADS;
         insert_end[i] = (i+1) * NUM_NODES/NUM_THREADS;
         delete_end[i] = (i+1) * NUM_NODES/NUM_THREADS;
+
+
+        for (int j = insert_start[i]; j<= insert_end[i]; j++) {
+            insert_set[i].insert(j);
+        }
+
+        for (int j = delete_start[i]; j <= delete_end[i]; j++) {
+            delete_set[i].insert(j);
+        }
     }
 
     struct timespec code_start, code_end;
