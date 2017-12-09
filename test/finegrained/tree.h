@@ -409,9 +409,11 @@ TreeNode<KeyType, ValueType> *RBTree<KeyType, ValueType>::Search(KeyType key) {
     if (!cur->IsExternal()) {
       if (key <= cur->GetKey()) {
         cur = cur->GetLeft();
+        cur->Takeover(NOP, key, key, false);
       }
       else {
         cur = cur->GetRight();
+        cur->Takeover(NOP, key, key, false);
       }
     }
     else {
