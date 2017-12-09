@@ -359,7 +359,7 @@ DataNode<KeyType, ValueType> *TreeNode<KeyType, ValueType>::Takeover(op_t op, Ke
         old_data = this->data;
       }*/
 
-      auto newPointer = new TreeNode<KeyType, ValueType>(new DataNode<KeyType, ValueType>(old_data));
+      //auto newPointer = new TreeNode<KeyType, ValueType>(new DataNode<KeyType, ValueType>(old_data));
       
       //this->help(this, old_data, newPointer);
       
@@ -410,10 +410,10 @@ DataNode<KeyType, ValueType> * TreeNode<KeyType, ValueType>::acquireOwnership(op
     //printf("stuck in acquireOwnership(), key = %d, own = %d\n", key, (int) old_data->own);
     if (old_data->own == OWNED) {
 
-      if (newPointer != NULL) {
-        delete newPointer;
-      }
-      newPointer = new TreeNode<KeyType, ValueType>(new DataNode<KeyType, ValueType>(old_data));
+      //if (newPointer != NULL) {
+      //  delete newPointer;
+      //}
+      //newPointer = new TreeNode<KeyType, ValueType>(new DataNode<KeyType, ValueType>(old_data));
         //std::cout << key << " " << 1 << std::endl;
 
       // perform help

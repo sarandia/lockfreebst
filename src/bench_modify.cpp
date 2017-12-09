@@ -7,7 +7,7 @@
 #include <ctime>
 
 #define NUM_THREADS 4
-#define NUM_NODES 100
+#define NUM_NODES 1000000
 
 using namespace lock_free_rbtree;
 using namespace std;
@@ -43,14 +43,14 @@ void *threadfunc(void *tid) {
         //for (int j = 0; j <= 1000000; j++);
     }
 
-    //for (auto itr = delete_set.begin(); itr != delete_set.end(); itr++) {
-    //    t->Remove(*itr);
+    for (auto itr = delete_set.begin(); itr != delete_set.end(); itr++) {
+        t->Remove(*itr);
         //t->print_tree();
 
         //cout << "Removed " << *itr << endl;
         //cout << "***********************************************************" << endl;
         //print2D(t->GetRoot());
-    //}
+    }
     return NULL;
 }
 
@@ -87,14 +87,14 @@ int main() {
     cout << "Execution took " << elapsed << " seconds." << endl;
 
     //print2D(t->GetRoot());
-    t->checkBlackDepth();
+    //t->checkBlackDepth();
 
-    for (int i = 1; i < NUM_NODES; i++) {
+    /*for (int i = 1; i < NUM_NODES; i++) {
         TreeNode<int, int> *found = t->Search(i);
         if (found == NULL) {
             cout << "ERROR: Key " << i << " was inserted but not found!!!" << endl;
         }
-    }
+    }*/
     t->print_tree();
     return 0;
 }
