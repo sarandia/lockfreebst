@@ -1,7 +1,8 @@
 # Lock-free Self-balancing Binary Search Tree
 ## Team Members: Ziyuan Chen (ziyuanc), Ruogu Du (ruogud)
 
-[# FINAL REPORT](http://htmlpreview.github.io/?https://github.com/sarandia/lockfreebst/blob/master/15-618%20Final%20Project%20Report.html)
+## FINAL REPORT LINK:
+[FINAL REPORT](http://htmlpreview.github.io/?https://github.com/sarandia/lockfreebst/blob/master/15-618%20Final%20Project%20Report.html)
 
 ## Proposal:
 ### Summary
