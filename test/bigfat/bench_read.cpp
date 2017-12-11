@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <ctime>
 
-#define NUM_THREADS 2
+#define NUM_THREADS 1
 #define NUM_NODES 500000
 
 using namespace lock_free_rbtree;
@@ -26,27 +26,12 @@ RBTree<int, int> *t = new RBTree<int, int>();
 void *threadfunc(void *tid) {
     int myid = (long) tid;
     printf("Starting thread %d\n", myid);
-
-    for (auto itr = insert_set[myid].begin(); itr != insert_set[myid].end(); itr++) {
-        t->Insert(*itr, *itr);
-        //t->print_tree();
-        //cout << "Inserted " << *itr << endl;
-        //print2D(t->GetRoot());
-        //for (int j = 0; j <= 1000000; j++);
+    for (int i = 0; i < 1000000; i++) {
+        //for (auto itr = insert_set[myid].begin(); itr != insert_set[myid].end(); itr++) {
+            t->Search(20000);
+        //}
     }
 
-    for (auto itr = insert_set[myid].begin(); itr != insert_set[myid].end(); itr++) {
-        t->Search(*itr);
-    }
-
-    for (auto itr = delete_set[myid].begin(); itr != delete_set[myid].end(); itr++) {
-        t->Remove(*itr);
-        //t->print_tree();
-
-        //cout << "Removed " << *itr << endl;
-        //cout << "***********************************************************" << endl;
-        //print2D(t->GetRoot());
-    }
     return NULL;
 }
 
@@ -67,6 +52,10 @@ int main() {
         for (int j = delete_start[i]; j <= delete_end[i]; j++) {
             delete_set[i].insert(j);
         }
+    }
+
+    for (int i = 1; i < NUM_NODES; i++) {
+        t->Insert(i,i);
     }
 
     struct timespec code_start, code_end;

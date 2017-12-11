@@ -6,8 +6,8 @@
 #include <pthread.h>
 #include <ctime>
 
-#define NUM_THREADS 24
-#define NUM_NODES 100000
+#define NUM_THREADS 8
+#define NUM_NODES 500000
 
 using namespace lock_free_rbtree;
 using namespace std;

@@ -6,8 +6,8 @@
 #include <pthread.h>
 #include <ctime>
 
-#define NUM_THREADS 2
-#define NUM_NODES 1000000
+#define NUM_THREADS 8
+#define NUM_NODES 500000
 
 using namespace lock_free_rbtree;
 using namespace std;
@@ -37,9 +37,9 @@ void *threadfunc(void *tid) {
         //for (int j = 0; j <= 1000000; j++);
     }
 
-    //for (auto itr = insert_set[myid].begin(); itr != insert_set[myid].end(); itr++) {
-    //    t->Search(*itr);
-    //}
+    for (auto itr = insert_set[myid].begin(); itr != insert_set[myid].end(); itr++) {
+        t->Search(*itr);
+    }
 
     for (auto itr = delete_set[myid].begin(); itr != delete_set[myid].end(); itr++) {
         t->Remove(*itr);
