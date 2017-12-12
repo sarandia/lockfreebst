@@ -18,3 +18,4 @@ clean:
 	rm ptest
 	rm pdelete
 	rm bm
+	rm br
