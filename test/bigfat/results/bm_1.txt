@@ -1,4 +1,0 @@
-Starting thread 0
-Execution took 15.5623 seconds.
-Depth = 1
-Number of Nodes = 1

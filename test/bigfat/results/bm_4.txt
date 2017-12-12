@@ -1,7 +1,0 @@
-Starting thread 2
-Starting thread 1
-Starting thread 0
-Starting thread 3
-Execution took 22.8185 seconds.
-Depth = 1
-Number of Nodes = 1
